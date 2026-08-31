@@ -1,7 +1,10 @@
 /* Smart Star Projector — popup variant
  * A copy of custom:star-projector-card, modified so that:
- *   - the "dropdown" controls open in a modal POPUP (native <dialog>) instead of
- *     expanding inline;
+ *   - the "dropdown" controls open in a modal POPUP (native <dialog>) that scales
+ *     and is styled like Home Assistant's more-info dialog: min(500px, 100vw-32px)
+ *     with a 28px radius on desktop, full-screen with no radius below HA's own
+ *     breakpoint (max-width:450px OR max-height:500px), the same scrim / surface
+ *     tokens, and rem-based typography (title 1.574rem/400, body 1rem);
  *   - every entity is configured explicitly (no prefix / name wildcard) and each
  *     one is a selectable field in the graphical editor.
  * User-facing strings German; code comments English.
@@ -27,31 +30,75 @@ ha-card{padding:12px 14px}
 .pwr.on{background:var(--acc);color:#fff}
 .open-btn{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:2px;flex:0 0 auto;display:inline-flex}
 .open-btn ha-icon{--mdc-icon-size:20px}
-.row{display:flex;align-items:center;gap:9px;margin-top:9px;min-height:26px}
-.row .ic{--mdc-icon-size:17px;color:var(--secondary-text-color);width:32px;text-align:center}
-.tg{border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);color:var(--secondary-text-color);width:32px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
-.tg ha-icon{--mdc-icon-size:17px}
+/* --- control rows: sized to Home Assistant's dialog text scale (rem, 16px base) --- */
+.row{display:flex;align-items:center;gap:12px;min-height:44px}
+.row+.row{margin-top:4px}
+.row .ic{--mdc-icon-size:22px;color:var(--secondary-text-color);width:36px;text-align:center;flex:0 0 auto}
+.tg{border:1px solid var(--divider-color);border-radius:10px;background:var(--card-background-color);color:var(--secondary-text-color);width:38px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+.tg ha-icon{--mdc-icon-size:20px}
 .tg.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc)}
-.lbl{font-size:12.5px;color:var(--primary-text-color);flex:0 0 62px}
-.sl{-webkit-appearance:none;appearance:none;flex:1 1 auto;height:5px;border-radius:5px;background:var(--divider-color);outline:none;cursor:pointer;min-width:60px}
-.sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--acc);cursor:pointer}
-.sl::-moz-range-thumb{width:15px;height:15px;border:none;border-radius:50%;background:var(--acc);cursor:pointer}
-.col{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:2px;flex:0 0 auto}
-.col ha-icon{--mdc-icon-size:17px}
-.val{font-size:11.5px;font-weight:700;color:var(--secondary-text-color);flex:0 0 34px;text-align:right;font-variant-numeric:tabular-nums}
-.chips{display:flex;flex-wrap:wrap;gap:5px;flex:1 1 auto}
-.chip{border:1px solid var(--divider-color);background:var(--card-background-color);color:var(--primary-text-color);border-radius:999px;padding:4px 9px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;line-height:1}
+.lbl{font-size:0.9375rem;color:var(--primary-text-color);flex:0 0 84px}
+.sl{-webkit-appearance:none;appearance:none;flex:1 1 auto;height:4px;border-radius:4px;background:var(--divider-color);outline:none;cursor:pointer;min-width:70px}
+.sl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--acc);cursor:pointer}
+.sl::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;background:var(--acc);cursor:pointer}
+.col{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:4px;flex:0 0 auto;display:inline-flex}
+.col ha-icon{--mdc-icon-size:20px}
+.val{font-size:0.8125rem;font-weight:600;color:var(--secondary-text-color);flex:0 0 40px;text-align:right;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
+.chip{border:1px solid var(--divider-color);background:var(--card-background-color);color:var(--primary-text-color);border-radius:999px;padding:6px 12px;font-size:0.8125rem;font-weight:600;font-family:inherit;cursor:pointer;line-height:1}
 .chip.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 16%,transparent)}
-.warn{padding:14px;color:var(--secondary-text-color);font-size:12.5px;text-align:center}
+.warn{padding:24px;color:var(--secondary-text-color);font-size:0.9375rem;text-align:center}
 
-dialog.pop{border:none;padding:0;border-radius:16px;width:340px;max-width:92vw;background:var(--ha-card-background,var(--card-background-color,#fff));color:var(--primary-text-color);box-shadow:0 14px 50px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-dialog.pop::backdrop{background:rgba(0,0,0,.55)}
-.pop-hd{display:flex;align-items:center;gap:9px;padding:14px 16px 10px}
-.pop-hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
-.pop-ttl{font-weight:800;font-size:15px;flex:1;color:var(--primary-text-color)}
-.x{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:2px;display:inline-flex}
-.x ha-icon{--mdc-icon-size:20px}
-.pop-bd{padding:0 16px 16px}
+/* --- popup: scaled + styled like Home Assistant's more-info dialog (ha-dialog) --- */
+dialog.pop{
+  border:none;margin:auto;padding:0;
+  width:min(500px, calc(100vw - 32px));
+  max-width:min(500px, calc(100vw - 32px));
+  max-height:calc(100% - 72px);
+  border-radius:var(--ha-dialog-border-radius, 28px);
+  color:var(--primary-text-color);
+  background:var(--ha-dialog-surface-background, var(--mdc-theme-surface, var(--card-background-color, #fff)));
+  box-shadow:0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14), 0 9px 46px 8px rgba(0,0,0,.12);
+  font-family:var(--mdc-typography-body1-font-family, var(--ha-font-family-body, inherit));
+  font-size:1rem;
+  overflow:hidden;
+}
+dialog.pop[open]{display:flex;flex-direction:column}
+dialog.pop::backdrop{
+  background:var(--dialog-scrim-color, rgba(0,0,0,.32));
+  -webkit-backdrop-filter:var(--dialog-backdrop-filter, none);
+  backdrop-filter:var(--dialog-backdrop-filter, none);
+}
+.pop-hd{
+  flex:0 0 auto;display:flex;align-items:center;gap:12px;
+  padding:24px 24px 12px;
+  font-size:1.574rem;font-weight:400;line-height:1.2;
+  color:var(--primary-text-color);
+}
+.pop-hd>ha-icon{--mdc-icon-size:24px;color:var(--acc);flex:0 0 auto}
+.pop-ttl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.x{
+  flex:0 0 auto;border:none;background:none;cursor:pointer;
+  color:var(--secondary-text-color);
+  width:40px;height:40px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.x:hover{background:var(--secondary-background-color, rgba(127,127,127,.15))}
+.x ha-icon{--mdc-icon-size:24px}
+.pop-bd{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  padding:8px 24px 24px;
+}
+
+@media all and (max-width:450px), all and (max-height:500px){
+  dialog.pop{
+    width:100vw;max-width:100vw;
+    height:100%;max-height:100%;
+    margin:0;border-radius:0;
+  }
+  .pop-hd{padding-top:max(24px, env(safe-area-inset-top))}
+  .pop-bd{padding-bottom:max(24px, env(safe-area-inset-bottom))}
+}
 `;
 
 const TIMERS = [["00:00:00", "Aus"], ["00:15:00", "15m"], ["00:30:00", "30m"], ["01:00:00", "1 Std"], ["02:00:00", "2 Std"]];
