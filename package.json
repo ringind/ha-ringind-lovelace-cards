@@ -1,0 +1,11 @@
+{
+  "name": "ha-lovelace-cards",
+  "version": "1.0.0",
+  "description": "Vanilla custom Lovelace cards for a specific Home Assistant setup (appliances, vacuums, TV, motion, star projector).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "license": "MIT"
+}

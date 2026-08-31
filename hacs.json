@@ -1,0 +1,6 @@
+{
+  "name": "HA Lovelace Cards (Ring)",
+  "filename": "ha-lovelace-cards.js",
+  "render_readme": true,
+  "homeassistant": "2023.9.0"
+}
