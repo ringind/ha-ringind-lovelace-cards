@@ -10,16 +10,28 @@ Every card exposes its entities as config options for exactly that reason.
 
 | `type:` | Card | What it does |
 |---|---|---|
-| `custom:star-projector-card` | Sternenprojektor (kompakt) | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. Collapses to the header; a chevron expands the controls inline. |
-| `custom:star-projector-popup-card` | Sternenprojektor (Popup / Dropdown) | Same controls; `mode` (editor-choosable) shows them either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays visible; configurable popup‑surface opacity) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
-| `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, three remote‑subview shortcuts, HDMI‑input selector, Hue Play Sync Box, Sonos night‑sound / speech‑enhancement, TV‑light scene. Collapsible. |
-| `custom:wz-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Collapsible. |
-| `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Collapsible. |
-| `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Collapsible. |
-| `custom:roborock-s7-card` | Roborock S7 MaxV | Live map image, start/pause/stop/dock/locate, **area cleaning** via `vacuum.clean_area`, fan speed, mop settings, status & lifetime stats. Collapsible. |
-| `custom:dreame-h14-card` | Dreame H14 Pro | Hand‑pushed wet/dry vacuum — tank/consumable alerts, the two dock actions, suction/water/brush levels, wear counters. Collapsible. |
+| `custom:star-projector-popup-card` | Sternenprojektor (Popup / Dropdown) | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
+| `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, 1–4 remote‑subview shortcuts, 1–4 HDMI‑input chips, Hue Play Sync Box (with a labelled **Sync** button), 1–4 Sonos sound toggles (night‑sound / speech‑enhancement / …), TV‑light scene. Popup or dropdown. |
+| `custom:wz-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup or dropdown. |
+| `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Popup or dropdown. |
+| `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Popup or dropdown. |
+| `custom:roborock-s7-card` | Roborock S7 MaxV | Live map image, start/pause/stop/dock/locate, **area cleaning** via `vacuum.clean_area`, fan speed, mop settings, status & lifetime stats. Popup or dropdown. |
+| `custom:dreame-h14-card` | Dreame H14 Pro | Hand‑pushed wet/dry vacuum — tank/consumable alerts, the two dock actions, suction/water/brush levels, wear counters. Popup or dropdown. |
 
-All user‑facing strings are German; all code comments are English.
+Code comments are English. User‑facing text is bilingual: every card takes a
+`language` option (`auto` / `de` / `en`) — `auto` follows the Home Assistant UI
+language and falls back to German.
+
+### Common options (all cards)
+
+| Option | Default | Notes |
+|---|---|---|
+| `mode` | `popup` | `popup` = controls open in a modal `<dialog>` scaled/styled like HA's more‑info dialog (desktop ≈ `min(520px, 100vw−32px)`, 28 px radius, rem typography; full‑screen on small viewports; overlay **always transparent** so the dashboard stays visible). `dropdown` = inline expand/collapse under the header via a chevron. Editor field: **Anzeige / Display**. |
+| `language` | `auto` | `auto` → HA UI language (German fallback), or force `de` / `en`. Editor field: **Sprache / Language**. |
+| `title` | per card | Header label (and popup title in `popup` mode). |
+
+The four appliance/cleaning cards (`aeg-…`, `bosch-…`, `roborock-…`, `dreame-…`) keep a
+fixed collapsed height so they line up side by side.
 
 ---
 
@@ -78,34 +90,13 @@ lovelace:
 Add via the dashboard **card picker** (each card has a visual editor), or in YAML. Minimal
 examples below — open the card's editor to point every entity at your own.
 
-### `custom:star-projector-card`
-
-```yaml
-type: custom:star-projector-card
-prefix: smart_star_projector   # entity-id prefix; entities are derived as:
-                               #   switch.<prefix>_master
-                               #   light.<prefix>_background   (Nebel)
-                               #   light.<prefix>_laser        (Sterne)
-                               #   number.<prefix>_star_rotation_speed
-                               #   time.<prefix>_timer
-title: Sternenprojektor        # optional
-```
-
-| Option | Default | Notes |
-|---|---|---|
-| `prefix` | `smart_star_projector` | Used to build all five entity ids. |
-| `title` | `Sternenprojektor` | Header label. |
-
-Collapsed by default → shows only the header (title + power button). The chevron expands the
-Nebel / Sterne / Rotation / Timer rows inline.
-
 ### `custom:star-projector-popup-card`
 
 ```yaml
 type: custom:star-projector-popup-card
 title: Sternenprojektor
 mode: popup                # "popup" (default) or "dropdown"
-background_opacity: 100    # popup only — 0..100, popup SURFACE opacity (overlay stays transparent)
+language: auto             # auto | de | en
 power: switch.smart_star_projector_master
 nebula: light.smart_star_projector_background
 stars: light.smart_star_projector_laser
@@ -113,58 +104,67 @@ rotation: number.smart_star_projector_star_rotation_speed
 timer: time.smart_star_projector_timer
 ```
 
+Plus the [common options](#common-options-all-cards) (`mode`, `language`, `title`).
+
 | Option | Default | Notes |
 |---|---|---|
-| `title` | `Sternenprojektor` | Header + popup title. |
-| `mode` | `popup` | `popup` = modal `<dialog>` scaled/styled like HA's more‑info dialog (desktop `min(500px, 100vw−32px)`, 28px radius; full‑screen below `max-width:450px` / `max-height:500px`; rem typography). `dropdown` = inline expand/collapse under the header (chevron), like the base card. Editor field: **Anzeige**. |
-| `background_opacity` | `100` | Popup mode only — opacity of the **popup's own surface**, `0`–`100` %. The overlay behind the popup is **always transparent** (the dashboard stays 100 % visible); a light blur keeps a translucent popup legible. Editor field: slider. |
 | `power` | `switch.smart_star_projector_master` | Any toggleable entity. |
 | `nebula` | `light.smart_star_projector_background` | Brightness + color. |
 | `stars` | `light.smart_star_projector_laser` | Brightness. |
 | `rotation` | `number.smart_star_projector_star_rotation_speed` | 10–1000. |
 | `timer` | `time.smart_star_projector_timer` | `HH:MM:SS`. |
 
-In `popup` mode the tune icon opens the controls in the modal (Esc / backdrop / ✕ to close);
-in `dropdown` mode the chevron expands them inline. The editor presents each entity as its
-own picker.
+In `popup` mode the tune icon opens the controls in the modal (Esc / backdrop / ✕ to close),
+and the power button is mirrored into the popup header; in `dropdown` mode the chevron
+expands them inline. The editor presents each entity as its own picker (no prefix).
 
 ### `custom:wz-tv-card`
 
 ```yaml
 type: custom:wz-tv-card
 title: Fernseher
+mode: popup            # popup | dropdown
+language: auto         # auto | de | en
 media_player: media_player.samsungtv
-nachtton: switch.a_wz_nachtton
-speech: switch.a_wz_sprachverbesserung
 tv_light_scene: scene.wz_alle_fernsehlicht
 sync_power: switch.sync_box_power
-sync_button: input_button.sync_box_sync
+sync_button: input_button.sync_box_sync   # a labelled "Sync" button in the card
 hdmi_select: select.sync_box_hdmi_input
-remotes:
+remotes:                                   # 1–4, add/remove in the visual editor
   - { label: waipu.tv, icon: "phu:waiputv",  path: /lovelace/firetv }
   - { label: Octagon,  icon: "mdi:octagon",  path: /lovelace/octagon }
   - { label: Apple TV, icon: "phu:apple-tv", path: /lovelace/apple-tv }
-# hdmi_options: [waipu.tv, Octagon, Apple TV, Blu-Ray]   # override the HDMI chip list
+hdmi:                                       # 1–4, add/remove in the visual editor
+  - { option: "HDMI 1", icon: "mdi:television" }
+  - { option: "HDMI 2", icon: "mdi:gamepad-variant" }
+ton:                                        # 1–4 sound toggles, add/remove in the editor
+  - { entity: switch.a_wz_nachtton,            label: Nachtton, icon: "mdi:weather-night" }
+  - { entity: switch.a_wz_sprachverbesserung,  label: Sprache,  icon: "mdi:account-voice" }
 ```
 
-Power runs through the `media_player` (`media_player.toggle`). `remotes` entries navigate to
-existing dashboard views. Collapsible.
+Plus the [common options](#common-options-all-cards). Power runs through the `media_player`
+(`media_player.toggle`). `remotes` entries navigate to existing dashboard views; `hdmi`
+chips call `select.select_option` on `hdmi_select`; `ton` toggles switch on the entity's own
+domain. Each list is 1–4 items, edited inline in the visual editor.
 
 ### `custom:wz-motion-card`
 
 ```yaml
 type: custom:wz-motion-card
 title: Bewegungssensoren WZ
+mode: popup                                    # popup | dropdown
+language: auto                                 # auto | de | en
 master: input_boolean.wz_motion_state         # header power button
 aggregate: binary_sensor.livingdining_motion  # drives the status banner + header glow
-sources:
+sources:                                       # add/remove in the visual editor (1–8)
   - { name: Spülbecken,  motion: binary_sensor.hue_motion_spulbecken_motion, enable: switch.hue_motion_spulbecken_motion }
   - { name: Küchentheke, motion: binary_sensor.hue_motion_wohnzimmer_motion, enable: switch.hue_motion_wohnzimmer_motion }
   - { name: FP2 Präsenz, motion: binary_sensor.wz_fp2_presence,              enable: automation.wohn_esszimmer_yama_fp2_wz }
 ```
 
-Each source's `enable` may be a `switch` **or** an `automation` — the toggle picks the
-service from the entity's domain. Collapsible.
+Plus the [common options](#common-options-all-cards). The motion sources are an add/remove
+list in the visual editor. Each source's `enable` may be a `switch` **or** an `automation` —
+the toggle picks the service from the entity's domain.
 
 ### `custom:aeg-waschtrockner-card`
 
@@ -181,10 +181,12 @@ title: Waschtrockner        # optional
 | `title` | — | Header sub‑label. |
 | `image` | — | Photo URL; hides the SVG illustration. |
 
+Plus the [common options](#common-options-all-cards) (`mode`, `language`, `title`).
+
 > The `switch.*_userSelections_*` entities of `electrolux_status` are effectively read‑only
 > (the cloud API ignores stand‑alone writes), so the card renders them as tap‑to‑more‑info
-> chips. `switch.*_uiLockMode` (Kindersicherung) is a real toggle. Collapsible (fixed 330 px
-> collapsed height, matching the other three appliance cards).
+> chips. `switch.*_uiLockMode` (Kindersicherung) is a real toggle. In `dropdown` mode the
+> collapsed card is a fixed 330 px, matching the other three appliance cards.
 
 ### `custom:bosch-dishwasher-card`
 
@@ -203,6 +205,8 @@ title: Bosch Super Silence                      # optional
 | `title` | `Super Silence` | Model sub‑label. |
 | `image` | — | Photo URL; hides the SVG illustration. |
 
+Plus the [common options](#common-options-all-cards) (`mode`, `language`).
+
 ### `custom:roborock-s7-card`
 
 ```yaml
@@ -213,10 +217,11 @@ rooms_entity: image.roborock_s7_maxv_map_0_custom   # image whose `rooms` attr l
 title: Roborock S7 MaxV
 ```
 
-Every other entity id (battery, progress, status, mop selects, DND switch, presence sensors,
-…) has a sensible default in `src/roborock-s7-card.js` → `setConfig()` and can be overridden
-in YAML. **Area cleaning** maps segment names from the `rooms` attribute to Home Assistant
-`area_id`s and calls `vacuum.clean_area`. Collapsible.
+Plus the [common options](#common-options-all-cards). Every other entity id (battery,
+progress, status, mop selects, DND switch, presence sensors, …) has a sensible default in
+`src/roborock-s7-card.js` → `setConfig()` and can be overridden in YAML. **Area cleaning**
+maps segment names from the `rooms` attribute to Home Assistant `area_id`s and calls
+`vacuum.clean_area`.
 
 ### `custom:dreame-h14-card`
 
@@ -227,9 +232,9 @@ title: Dreame H14 Pro    # optional
 # image: /local/h14.png  # optional photo
 ```
 
-All entities derive from `prefix` (`<domain>.<prefix>_<suffix>`). This is a hand‑pushed
-floor washer — the card has no autonomous run, only the two dock actions
-(`*_start_self_cleaning`, `*_start_self_drying`). Collapsible.
+Plus the [common options](#common-options-all-cards). All entities derive from `prefix`
+(`<domain>.<prefix>_<suffix>`). This is a hand‑pushed floor washer — the card has no
+autonomous run, only the two dock actions (`*_start_self_cleaning`, `*_start_self_drying`).
 
 ---
 
