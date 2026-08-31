@@ -5,8 +5,10 @@
  *     dialog; "dropdown" expands them inline under the header (like the base card).
  *   - Popup mode: min(500px, 100vw-32px) with a 28px radius on desktop, full-screen
  *     below HA's own breakpoint (max-width:450px OR max-height:500px), HA surface
- *     tokens, rem-based typography (title 1.574rem/400, body 1rem). The modal
- *     overlay opacity is configurable via `overlay_opacity` (0..100, default 100).
+ *     tokens, rem-based typography (title 1.574rem/400, body 1rem). The overlay
+ *     behind the popup is ALWAYS transparent (the dashboard stays fully visible);
+ *     the popup's own surface opacity is configurable via `background_opacity`
+ *     (0..100, default 100 = opaque) — a light blur keeps a translucent popup legible.
  *   - Every entity is configured explicitly (no prefix / name wildcard) and each
  *     one is a selectable field in the graphical editor.
  * User-facing strings German; code comments English.
@@ -14,8 +16,8 @@
  * config:
  *   type: custom:star-projector-popup-card
  *   title: "Sternenprojektor"
- *   mode: popup            # "popup" (default) or "dropdown"
- *   overlay_opacity: 100   # popup mode only; 0..100, opacity of the modal scrim (default 100)
+ *   mode: popup               # "popup" (default) or "dropdown"
+ *   background_opacity: 100   # popup mode only; 0..100, opacity of the popup surface (default 100)
  *   power:    switch.smart_star_projector_master
  *   nebula:   light.smart_star_projector_background
  *   stars:    light.smart_star_projector_laser
@@ -65,18 +67,17 @@ dialog.pop{
   max-height:calc(100% - 72px);
   border-radius:var(--ha-dialog-border-radius, 28px);
   color:var(--primary-text-color);
-  background:var(--ha-dialog-surface-background, var(--mdc-theme-surface, var(--card-background-color, #fff)));
+  background:color-mix(in srgb, var(--ha-dialog-surface-background, var(--mdc-theme-surface, var(--card-background-color, #fff))) var(--spp-bg-opacity, 100%), transparent);
   box-shadow:0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14), 0 9px 46px 8px rgba(0,0,0,.12);
   font-family:var(--mdc-typography-body1-font-family, var(--ha-font-family-body, inherit));
   font-size:1rem;
   overflow:hidden;
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
 }
 dialog.pop[open]{display:flex;flex-direction:column}
-dialog.pop::backdrop{
-  background:rgba(0, 0, 0, var(--spp-overlay-opacity, 1));
-  -webkit-backdrop-filter:var(--dialog-backdrop-filter, none);
-  backdrop-filter:var(--dialog-backdrop-filter, none);
-}
+/* the overlay stays fully transparent — the dashboard behind is always 100% visible */
+dialog.pop::backdrop{background:transparent}
 .pop-hd{
   flex:0 0 auto;display:flex;align-items:center;gap:12px;
   padding:24px 24px 12px;
@@ -139,7 +140,7 @@ const ROWS = `
 const DEFAULTS = {
   title: "Sternenprojektor",
   mode: "popup", // "popup" | "dropdown"
-  overlay_opacity: 100, // 0..100 — popup scrim opacity; 100 = fully opaque
+  background_opacity: 100, // 0..100 — popup SURFACE opacity; 100 = opaque (overlay is always transparent)
   power: "switch.smart_star_projector_master",
   nebula: "light.smart_star_projector_background",
   stars: "light.smart_star_projector_laser",
@@ -161,11 +162,11 @@ class StarProjectorPopupCard extends HTMLElement {
     this._popup = this._cfg.mode !== "dropdown";
     this._drag = new Set();
     this._open = false;
-    let o = Number(this._cfg.overlay_opacity);
+    let o = Number(this._cfg.background_opacity);
     if (isNaN(o)) o = 100;
-    this._overlayAlpha = Math.max(0, Math.min(100, o)) / 100;
+    this._bgOpacity = Math.max(0, Math.min(100, o));
     if (this.shadowRoot) {
-      this.style.setProperty("--spp-overlay-opacity", String(this._overlayAlpha));
+      this.style.setProperty("--spp-bg-opacity", this._bgOpacity + "%");
       // structure differs between modes — rebuild if the mode changed on an existing card
       if (prevMode !== undefined && prevMode !== this._cfg.mode) {
         this.shadowRoot.innerHTML = "";
@@ -213,6 +214,7 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd">
   <ha-icon icon="mdi:creation"></ha-icon>
   <span class="pop-ttl" id="popTtl">Sternenprojektor</span>
+  <button class="pwr" id="popPwr" title="Ein/Aus"><ha-icon icon="mdi:power"></ha-icon></button>
   <button class="x" id="closeBtn" title="Schließen"><ha-icon icon="mdi:close"></ha-icon></button>
  </div>
  <div class="pop-bd" id="body">${ROWS}</div>
@@ -220,11 +222,13 @@ ${popup ? `<dialog class="pop" id="pop">
     this.$ = (id) => r.getElementById(id);
     const c = this._cfg;
     this.$("toggleBtn").onclick = () => this._toggle();
+    const togglePower = () => this._svc(this._dom(c.power), "toggle", { entity_id: c.power });
     if (popup) {
       this.$("closeBtn").onclick = () => this.$("pop").close();
       this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
+      this.$("popPwr").onclick = togglePower;
     }
-    this.$("pwr").onclick = () => this._svc(this._dom(c.power), "toggle", { entity_id: c.power });
+    this.$("pwr").onclick = togglePower;
     this.$("bgTg").onclick = () => this._svc(this._dom(c.nebula), "toggle", { entity_id: c.nebula });
     this.$("lsTg").onclick = () => this._svc(this._dom(c.stars), "toggle", { entity_id: c.stars });
     this.$("bgCol").onclick = () => this._mi(c.nebula);
@@ -246,7 +250,7 @@ ${popup ? `<dialog class="pop" id="pop">
   _render() {
     if (!this.shadowRoot) return;
     const c = this._cfg;
-    this.style.setProperty("--spp-overlay-opacity", String(this._overlayAlpha));
+    this.style.setProperty("--spp-bg-opacity", this._bgOpacity + "%");
     if (!this._e(c.power) && !this._e(c.nebula)) {
       this.$("body").innerHTML = `<div class="warn">Entitäten nicht gefunden – bitte im Karten-Editor auswählen.</div>`;
       if (!this._popup) this.$("body").hidden = false;
@@ -255,7 +259,9 @@ ${popup ? `<dialog class="pop" id="pop">
     const t = c.title || "Sternenprojektor";
     this.$("ttl").textContent = t;
     if (this.$("popTtl")) this.$("popTtl").textContent = t;
-    this.$("pwr").className = "pwr" + (this._on(c.power) ? " on" : "");
+    const powerOn = this._on(c.power);
+    this.$("pwr").className = "pwr" + (powerOn ? " on" : "");
+    if (this.$("popPwr")) this.$("popPwr").className = "pwr" + (powerOn ? " on" : "");
 
     const setTg = (tgId, slId, id) => {
       this.$(tgId).className = "tg" + (this._on(id) ? " on" : "");
@@ -289,7 +295,7 @@ class StarProjectorPopupCardEditor extends HTMLElement {
       this._form.computeLabel = (s) => ({
         title: "Titel",
         mode: "Anzeige",
-        overlay_opacity: "Overlay-Deckkraft (%) – nur Popup",
+        background_opacity: "Popup-Hintergrund Deckkraft (%) – nur Popup",
         power: "Power-Schalter",
         nebula: "Nebel-Licht",
         stars: "Sterne / Laser-Licht",
@@ -310,7 +316,7 @@ class StarProjectorPopupCardEditor extends HTMLElement {
         { value: "popup", label: "Popup" },
         { value: "dropdown", label: "Ausklappen (Dropdown)" },
       ] } } },
-      { name: "overlay_opacity", selector: { number: { min: 0, max: 100, step: 5, mode: "slider", unit_of_measurement: "%" } } },
+      { name: "background_opacity", selector: { number: { min: 0, max: 100, step: 5, mode: "slider", unit_of_measurement: "%" } } },
       { name: "power", selector: { entity: {} } },
       { name: "nebula", selector: { entity: {} } },
       { name: "stars", selector: { entity: {} } },

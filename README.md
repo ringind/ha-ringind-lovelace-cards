@@ -11,7 +11,7 @@ Every card exposes its entities as config options for exactly that reason.
 | `type:` | Card | What it does |
 |---|---|---|
 | `custom:star-projector-card` | Sternenprojektor (kompakt) | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. Collapses to the header; a chevron expands the controls inline. |
-| `custom:star-projector-popup-card` | Sternenprojektor (Popup / Dropdown) | Same controls; `mode` (editor-choosable) shows them either in a **modal popup** (scaled like HA's more-info dialog, configurable overlay opacity) or as an inline **dropdown**. Every entity is an individually selectable field in the editor (no prefix). |
+| `custom:star-projector-popup-card` | Sternenprojektor (Popup / Dropdown) | Same controls; `mode` (editor-choosable) shows them either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays visible; configurable popup‑surface opacity) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
 | `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, three remote‑subview shortcuts, HDMI‑input selector, Hue Play Sync Box, Sonos night‑sound / speech‑enhancement, TV‑light scene. Collapsible. |
 | `custom:wz-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Collapsible. |
 | `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Collapsible. |
@@ -104,8 +104,8 @@ Nebel / Sterne / Rotation / Timer rows inline.
 ```yaml
 type: custom:star-projector-popup-card
 title: Sternenprojektor
-mode: popup             # "popup" (default) or "dropdown"
-overlay_opacity: 100    # popup only — 0..100, modal scrim opacity (default 100 = opaque)
+mode: popup                # "popup" (default) or "dropdown"
+background_opacity: 100    # popup only — 0..100, popup SURFACE opacity (overlay stays transparent)
 power: switch.smart_star_projector_master
 nebula: light.smart_star_projector_background
 stars: light.smart_star_projector_laser
@@ -117,7 +117,7 @@ timer: time.smart_star_projector_timer
 |---|---|---|
 | `title` | `Sternenprojektor` | Header + popup title. |
 | `mode` | `popup` | `popup` = modal `<dialog>` scaled/styled like HA's more‑info dialog (desktop `min(500px, 100vw−32px)`, 28px radius; full‑screen below `max-width:450px` / `max-height:500px`; rem typography). `dropdown` = inline expand/collapse under the header (chevron), like the base card. Editor field: **Anzeige**. |
-| `overlay_opacity` | `100` | Popup mode only — opacity of the modal overlay/scrim, `0`–`100` %. Editor field: slider. |
+| `background_opacity` | `100` | Popup mode only — opacity of the **popup's own surface**, `0`–`100` %. The overlay behind the popup is **always transparent** (the dashboard stays 100 % visible); a light blur keeps a translucent popup legible. Editor field: slider. |
 | `power` | `switch.smart_star_projector_master` | Any toggleable entity. |
 | `nebula` | `light.smart_star_projector_background` | Brightness + color. |
 | `stars` | `light.smart_star_projector_laser` | Brightness. |
