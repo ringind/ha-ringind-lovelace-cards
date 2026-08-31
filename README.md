@@ -56,21 +56,25 @@ This repository is **not** in the default HACS store, so you add it as a custom 
 
 Updating later: HACS shows an update on the repo; click **Update** and hard‑refresh.
 
-### Option B — Manual
+### Option B — Manual (community-card folder)
 
-1. Copy `ha-lovelace-cards.js` (the file at the repo root — it is the built bundle of all
-   `src/*.js`) into `config/www/` on your Home Assistant machine, e.g.
-   `config/www/ha-lovelace-cards.js`.
-2. Register the resource (below), pointing at `/local/ha-lovelace-cards.js`.
-3. Hard‑refresh the browser.
+1. Create `config/www/community/ringind-ha-cards/` on your Home Assistant host.
+2. Copy `ha-lovelace-cards.js` (the built bundle at the repo root — every `src/*.js` with
+   its `localization/` slice inlined) into it:
+   `config/www/community/ringind-ha-cards/ha-lovelace-cards.js`.
+   The repo's `deploy/ringind-ha-cards/` folder already contains exactly this (plus the
+   per-card `dist/*.js` builds, if you'd rather register a single card).
+3. Register the resource (below), pointing at
+   `/local/community/ringind-ha-cards/ha-lovelace-cards.js`.
+4. Hard‑refresh the browser.
 
 ### Register the resource
 
-Only needed if HACS did not do it automatically, or for manual install.
+Only needed if HACS did not do it automatically, or for a manual install.
 
 **UI (Storage mode):** *Settings → Dashboards → ⋮ → Resources → + Add resource*
-- **URL:** `/hacsfiles/ha-lovelace-cards/ha-lovelace-cards.js` (HACS)
-  or `/local/ha-lovelace-cards.js` (manual)
+- **URL:** `/hacsfiles/ringind-ha-cards/ha-lovelace-cards.js` (HACS)
+  or `/local/community/ringind-ha-cards/ha-lovelace-cards.js` (manual)
 - **Resource type:** `JavaScript Module`
 
 **YAML mode** (`configuration.yaml` / `ui-lovelace.yaml`):
@@ -79,7 +83,7 @@ Only needed if HACS did not do it automatically, or for manual install.
 lovelace:
   mode: yaml            # or storage
   resources:
-    - url: /hacsfiles/ha-lovelace-cards/ha-lovelace-cards.js
+    - url: /local/community/ringind-ha-cards/ha-lovelace-cards.js
       type: module
 ```
 
@@ -240,20 +244,28 @@ autonomous run, only the two dock actions (`*_start_self_cleaning`, `*_start_sel
 
 ## Development
 
-The individual cards live in `src/`. `ha-lovelace-cards.js` at the repo root is a generated
-bundle — each `src/*.js` wrapped in its own IIFE so their top‑level `const`s don't collide.
+- **`src/<card>.js`** — one self‑contained card each. User‑facing strings are **not** inline;
+  each file does `import DE from "../localization/de.js"` / `import EN from
+  "../localization/en.js"` and picks its slice: `const I18N = { de: DE["<card>"], en:
+  EN["<card>"] }`.
+- **`localization/de.js` + `localization/en.js`** — every card's strings, one keyed entry
+  per card type. Values are plain strings or `(arg) => string` builders. **This is where you
+  edit wording / add a language.**
+- **`npm run build`** (`build.mjs`, Node, no deps) — a `data:` URI module can't resolve the
+  relative `import`, so the build inlines the matching localization slice and emits:
+  - `dist/<card>.js` — self‑contained per‑card build (register one card on its own)
+  - `ha-lovelace-cards.js` (repo root) — the bundle, each card in its own IIFE
+  - `deploy/ringind-ha-cards/` — a copy of the bundle + `dist/*.js`, i.e. exactly what goes
+    into `config/www/community/ringind-ha-cards/` on the HA host.
 
 ```bash
-# edit src/<card>.js, then:
-npm run build      # regenerates ha-lovelace-cards.js
+# edit src/<card>.js and/or localization/{de,en}.js, then:
+npm run build
 ```
 
 CI (`.github/workflows/validate.yml`) runs the HACS action and fails the build if
-`ha-lovelace-cards.js` is out of date with `src/`. `release.yml` rebuilds the bundle and
-attaches it to every published GitHub Release (so HACS installs pin to a release asset).
-
-To iterate against a live instance without HACS, you can also register each `src/*.js` file
-as its own Lovelace resource.
+`ha-lovelace-cards.js` is out of date. `release.yml` rebuilds and attaches the bundle to
+every published GitHub Release.
 
 ---
 
