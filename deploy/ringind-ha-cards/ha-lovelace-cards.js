@@ -2452,7 +2452,7 @@ const I18N = { de: DE["star-projector-card"], en: EN["star-projector-card"] };
 const STYLE = `
 :host{--acc:#7c5cff;display:block}
 ha-card{padding:12px 14px}
-.hd{display:flex;align-items:center;gap:9px}
+.hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
@@ -2553,6 +2553,12 @@ class StarProjectorCard extends HTMLElement {
   getCardSize() { return 1; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
+  disconnectedCallback() {
+    // A view switch tears the card down; never carry an open modal dialog across it.
+    const d = this.shadowRoot && this.shadowRoot.getElementById("pop");
+    if (d && d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
+  }
+
   _lang() {
     const c = (this._cfg && this._cfg.language) || "auto";
     if (c === "de" || c === "en") return c;
@@ -2605,10 +2611,25 @@ class StarProjectorCard extends HTMLElement {
   }
 
   _toggle() {
-    if (this._popup) { this.$("pop").showModal(); return; }
+    if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
     this.$("toggleBtn").classList.toggle("open", this._open);
+  }
+
+  _openPop() {
+    const d = this.$("pop");
+    if (!d) return;
+    // Clear a stale `open` left behind when the card was detached by a view
+    // switch while the dialog was showing — otherwise showModal() throws and
+    // the popup button appears dead from then on.
+    if (d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
+    try {
+      d.showModal();
+    } catch (_e) {
+      d.removeAttribute("open");
+      try { d.showModal(); } catch (_e2) { /* ignore */ }
+    }
   }
 
   _build() {
@@ -2617,7 +2638,7 @@ class StarProjectorCard extends HTMLElement {
     const ttl = this._cfg.title || this._t("title");
     r.innerHTML = `<style>${STYLE}</style>
 <ha-card>
- <div class="hd">
+ <div class="hd" id="hd">
   <ha-icon icon="mdi:creation"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
   <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
@@ -2636,7 +2657,12 @@ ${popup ? `<dialog class="pop" id="pop">
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
     const c = this._cfg;
-    this.$("toggleBtn").onclick = () => this._toggle();
+    // Open/close from the whole header — leading icon, title and the tune/chevron
+    // icon; the power button keeps its own handler.
+    this.$("hd").addEventListener("click", (e) => {
+      if (e.target.closest("#pwr")) return;
+      this._toggle();
+    });
     const togglePower = () => this._svc(this._dom(c.power), "toggle", { entity_id: c.power });
     if (popup) {
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -2839,7 +2865,7 @@ const I18N = { de: DE["wz-motion-card"], en: EN["wz-motion-card"] };
 const STYLE = `
 :host{--acc:#f0a020;--live:#ffb023;--armed:#3ec46d;display:block}
 ha-card{padding:12px 14px}
-.hd{display:flex;align-items:center;gap:9px}
+.hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color);transition:color .2s}
 .hd.active>ha-icon{color:var(--live)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
@@ -2917,6 +2943,12 @@ class WzMotionCard extends HTMLElement {
   getCardSize() { return 4; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
+  disconnectedCallback() {
+    // A view switch tears the card down; never carry an open modal dialog across it.
+    const d = this.shadowRoot && this.shadowRoot.getElementById("pop");
+    if (d && d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
+  }
+
   _lang() {
     const c = this._cfg.language || "auto";
     if (c === "de" || c === "en") return c;
@@ -2930,10 +2962,25 @@ class WzMotionCard extends HTMLElement {
   _mi(id) { this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: id }, bubbles: true, composed: true })); }
 
   _toggle() {
-    if (this._popup) { this.$("pop").showModal(); return; }
+    if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
     this.$("toggleBtn").classList.toggle("open", this._open);
+  }
+
+  _openPop() {
+    const d = this.$("pop");
+    if (!d) return;
+    // Clear a stale `open` left behind when the card was detached by a view
+    // switch while the dialog was showing — otherwise showModal() throws and
+    // the popup button appears dead from then on.
+    if (d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
+    try {
+      d.showModal();
+    } catch (_e) {
+      d.removeAttribute("open");
+      try { d.showModal(); } catch (_e2) { /* ignore */ }
+    }
   }
 
   _rows() {
@@ -2972,7 +3019,12 @@ ${popup ? `<dialog class="pop" id="pop">
     this.$ = (id) => r.getElementById(id);
     this.$("body").addEventListener("click", (ev) => this._tap(ev), false);
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
-    this.$("toggleBtn").addEventListener("click", () => this._toggle(), false);
+    // Open/close from the whole header — leading icon, title and the tune/chevron
+    // icon; the power button keeps its own handler.
+    this.$("hd").addEventListener("click", (e) => {
+      if (e.target.closest("#pwr")) return;
+      this._toggle();
+    }, false);
     if (popup) {
       this.$("popPwr").addEventListener("click", (ev) => this._tap(ev), false);
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -3252,7 +3304,7 @@ const I18N = { de: DE["wz-tv-card"], en: EN["wz-tv-card"] };
 const STYLE = `
 :host{--acc:#4b8bf5;display:block}
 ha-card{padding:12px 14px}
-.hd{display:flex;align-items:center;gap:9px}
+.hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
 .src{font-size:11px;font-weight:700;color:var(--secondary-text-color);margin-right:2px}
@@ -3349,6 +3401,12 @@ class WzTvCard extends HTMLElement {
   getCardSize() { return 4; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
+  disconnectedCallback() {
+    // A view switch tears the card down; never carry an open modal dialog across it.
+    const d = this.shadowRoot && this.shadowRoot.getElementById("pop");
+    if (d && d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
+  }
+
   _lang() {
     const c = this._cfg.language || "auto";
     if (c === "de" || c === "en") return c;
@@ -3360,15 +3418,34 @@ class WzTvCard extends HTMLElement {
   _on(id) { return this._st(id) === "on"; }
   _svc(dom, srv, data) { this._hass.callService(dom, srv, data); }
   _nav(path) {
+    // Close the popup before navigating away — a dialog left open across a view
+    // switch wedges the browser top-layer state and kills the button afterwards.
+    const d = this.$("pop");
+    if (d && d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
     history.pushState(null, "", path);
     this.dispatchEvent(new Event("location-changed", { bubbles: true, composed: true }));
   }
 
   _toggle() {
-    if (this._popup) { this.$("pop").showModal(); return; }
+    if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
     this.$("toggleBtn").classList.toggle("open", this._open);
+  }
+
+  _openPop() {
+    const d = this.$("pop");
+    if (!d) return;
+    // Clear a stale `open` left behind when the card was detached by a view
+    // switch while the dialog was showing — otherwise showModal() throws and
+    // the popup button appears dead from then on.
+    if (d.open) { try { d.close(); } catch (_e) { /* ignore */ } }
+    try {
+      d.showModal();
+    } catch (_e) {
+      d.removeAttribute("open");
+      try { d.showModal(); } catch (_e2) { /* ignore */ }
+    }
   }
 
   _rows() {
@@ -3397,7 +3474,7 @@ class WzTvCard extends HTMLElement {
     const ttl = this._cfg.title || this._t("title");
     r.innerHTML = `<style>${STYLE}</style>
 <ha-card>
- <div class="hd">
+ <div class="hd" id="hd">
   <ha-icon icon="mdi:television"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
   <span class="src" id="src"></span>
@@ -3418,7 +3495,12 @@ ${popup ? `<dialog class="pop" id="pop">
     this.$ = (id) => r.getElementById(id);
     this.$("body").addEventListener("click", (ev) => this._tap(ev), false);
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
-    this.$("toggleBtn").addEventListener("click", () => this._toggle(), false);
+    // Open/close from the whole header — leading icon, title, state and the
+    // tune/chevron icon; the power button keeps its own handler.
+    this.$("hd").addEventListener("click", (e) => {
+      if (e.target.closest("#pwr")) return;
+      this._toggle();
+    }, false);
     if (popup) {
       this.$("popPwr").addEventListener("click", (ev) => this._tap(ev), false);
       this.$("closeBtn").onclick = () => this.$("pop").close();
