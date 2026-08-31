@@ -22,8 +22,58 @@
 
 // User-facing strings live in localization/{de,en}.js (one entry per card type).
 // `npm run build` inlines the slice for this card; the imports are the source of truth.
-import DE from "../localization/de.js";
-import EN from "../localization/en.js";
+const DE = { "wz-motion-card": {
+  title: "Bewegungssensoren",
+  active: "Aktiv",
+  off: "Aus",
+  calm: "Ruhe",
+  detected: "Bewegung erkannt",
+  settings: "Sensoren",
+  expand: "Ein-/Ausklappen",
+  power: "Bewegungssteuerung ein/aus",
+  close: "Schließen",
+  e_title: "Titel",
+  e_mode: "Anzeige",
+  e_language: "Sprache",
+  e_popup: "Popup",
+  e_dropdown: "Ausklappen (Dropdown)",
+  e_auto: "Automatisch (HA)",
+  e_de: "Deutsch",
+  e_en: "Englisch",
+  e_master: "Master-Status (input_boolean)",
+  e_aggregate: "Gesamt-Bewegung (binary_sensor)",
+  e_sources: "Bewegungsmelder",
+  e_name: "Name",
+  e_motion: "Bewegungs-Sensor (binary_sensor)",
+  e_enable: "Aktivieren (switch / automation)",
+  e_add: "Sensor hinzufügen"
+} };
+const EN = { "wz-motion-card": {
+  title: "Motion sensors",
+  active: "Active",
+  off: "Off",
+  calm: "Calm",
+  detected: "Motion detected",
+  settings: "Sensors",
+  expand: "Expand / collapse",
+  power: "Motion control on/off",
+  close: "Close",
+  e_title: "Title",
+  e_mode: "Display",
+  e_language: "Language",
+  e_popup: "Popup",
+  e_dropdown: "Inline dropdown",
+  e_auto: "Automatic (HA)",
+  e_de: "German",
+  e_en: "English",
+  e_master: "Master state (input_boolean)",
+  e_aggregate: "Aggregate motion (binary_sensor)",
+  e_sources: "Motion sources",
+  e_name: "Name",
+  e_motion: "Motion sensor (binary_sensor)",
+  e_enable: "Enable (switch / automation)",
+  e_add: "Add sensor"
+} };
 const I18N = { de: DE["wz-motion-card"], en: EN["wz-motion-card"] };
 
 const STYLE = `

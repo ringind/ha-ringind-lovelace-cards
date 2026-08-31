@@ -2,7 +2,7 @@
 
 Seven vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
 
-- **`custom:star-projector-popup-card`** – smart star projector; controls as a modal popup
+- **`custom:star-projector-card`** – smart star projector; controls as a modal popup
   or an inline dropdown (`mode`), every entity a selectable editor field.
 - **`custom:wz-tv-card`** – compact TV hub (power, 1–4 remotes, 1–4 HDMI chips, Hue Sync Box
   with a labelled Sync button, 1–4 Sonos sound toggles).

@@ -10,7 +10,7 @@ Every card exposes its entities as config options for exactly that reason.
 
 | `type:` | Card | What it does |
 |---|---|---|
-| `custom:star-projector-popup-card` | Sternenprojektor (Popup / Dropdown) | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
+| `custom:star-projector-card` | Sternenprojektor | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
 | `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, 1–4 remote‑subview shortcuts, 1–4 HDMI‑input chips, Hue Play Sync Box (with a labelled **Sync** button), 1–4 Sonos sound toggles (night‑sound / speech‑enhancement / …), TV‑light scene. Popup or dropdown. |
 | `custom:wz-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup or dropdown. |
 | `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Popup or dropdown. |
@@ -90,10 +90,10 @@ lovelace:
 Add via the dashboard **card picker** (each card has a visual editor), or in YAML. Minimal
 examples below — open the card's editor to point every entity at your own.
 
-### `custom:star-projector-popup-card`
+### `custom:star-projector-card`
 
 ```yaml
-type: custom:star-projector-popup-card
+type: custom:star-projector-card
 title: Sternenprojektor
 mode: popup                # "popup" (default) or "dropdown"
 language: auto             # auto | de | en

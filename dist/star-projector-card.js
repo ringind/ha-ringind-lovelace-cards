@@ -1,4 +1,4 @@
-/* Smart Star Projector — popup / dropdown card
+/* Smart Star Projector card (custom:star-projector-card)
  *   - `mode` (graphical-editor choosable): "popup" (default) opens the controls in
  *     a modal <dialog> that scales & is styled like Home Assistant's more-info
  *     dialog; "dropdown" expands them inline under the header.
@@ -9,7 +9,7 @@
  * Code comments English.
  *
  * config:
- *   type: custom:star-projector-popup-card
+ *   type: custom:star-projector-card
  *   title: "Sternenprojektor"     # optional; falls back to a translated default
  *   mode: popup                   # "popup" (default) or "dropdown"
  *   language: auto                # "auto" | "de" | "en"
@@ -20,34 +20,75 @@
  *   timer:    time.smart_star_projector_timer
  */
 
-const I18N = {
-  de: {
-    title: "Sternenprojektor", settings: "Einstellungen", expand: "Ein-/Ausklappen",
-    power: "Ein/Aus", close: "Schließen", nebula: "Nebel", stars: "Sterne",
-    rotation: "Rotation", timer: "Timer", nebula_toggle: "Nebel ein/aus",
-    stars_toggle: "Sterne ein/aus", color: "Farbe",
-    t_off: "Aus", t_15: "15 Min", t_30: "30 Min", t_1h: "1 Std", t_2h: "2 Std",
-    not_found: "Entitäten nicht gefunden – bitte im Karten-Editor auswählen.",
-    e_title: "Titel", e_mode: "Anzeige", e_language: "Sprache",
-    e_popup: "Popup", e_dropdown: "Ausklappen (Dropdown)",
-    e_auto: "Automatisch (HA)", e_de: "Deutsch", e_en: "Englisch",
-    e_power: "Power-Schalter", e_nebula: "Nebel-Licht", e_stars: "Sterne / Laser-Licht",
-    e_rotation: "Rotationsgeschwindigkeit", e_timer: "Sleep-Timer",
-  },
-  en: {
-    title: "Star Projector", settings: "Settings", expand: "Expand / collapse",
-    power: "On/Off", close: "Close", nebula: "Nebula", stars: "Stars",
-    rotation: "Rotation", timer: "Timer", nebula_toggle: "Nebula on/off",
-    stars_toggle: "Stars on/off", color: "Colour",
-    t_off: "Off", t_15: "15 min", t_30: "30 min", t_1h: "1 h", t_2h: "2 h",
-    not_found: "Entities not found – pick them in the card editor.",
-    e_title: "Title", e_mode: "Display", e_language: "Language",
-    e_popup: "Popup", e_dropdown: "Inline dropdown",
-    e_auto: "Automatic (HA)", e_de: "German", e_en: "English",
-    e_power: "Power switch", e_nebula: "Nebula light", e_stars: "Stars / laser light",
-    e_rotation: "Rotation speed", e_timer: "Sleep timer",
-  },
-};
+// User-facing strings live in localization/{de,en}.js (one entry per card type).
+// `npm run build` inlines the slice for this card; the imports are the source of truth.
+const DE = { "star-projector-card": {
+  title: "Sternenprojektor",
+  settings: "Einstellungen",
+  expand: "Ein-/Ausklappen",
+  power: "Ein/Aus",
+  close: "Schließen",
+  nebula: "Nebel",
+  stars: "Sterne",
+  rotation: "Rotation",
+  timer: "Timer",
+  nebula_toggle: "Nebel ein/aus",
+  stars_toggle: "Sterne ein/aus",
+  color: "Farbe",
+  t_off: "Aus",
+  t_15: "15 Min",
+  t_30: "30 Min",
+  t_1h: "1 Std",
+  t_2h: "2 Std",
+  not_found: "Entitäten nicht gefunden – bitte im Karten-Editor auswählen.",
+  e_title: "Titel",
+  e_mode: "Anzeige",
+  e_language: "Sprache",
+  e_popup: "Popup",
+  e_dropdown: "Ausklappen (Dropdown)",
+  e_auto: "Automatisch (HA)",
+  e_de: "Deutsch",
+  e_en: "Englisch",
+  e_power: "Power-Schalter",
+  e_nebula: "Nebel-Licht",
+  e_stars: "Sterne / Laser-Licht",
+  e_rotation: "Rotationsgeschwindigkeit",
+  e_timer: "Sleep-Timer"
+} };
+const EN = { "star-projector-card": {
+  title: "Star Projector",
+  settings: "Settings",
+  expand: "Expand / collapse",
+  power: "On/Off",
+  close: "Close",
+  nebula: "Nebula",
+  stars: "Stars",
+  rotation: "Rotation",
+  timer: "Timer",
+  nebula_toggle: "Nebula on/off",
+  stars_toggle: "Stars on/off",
+  color: "Colour",
+  t_off: "Off",
+  t_15: "15 min",
+  t_30: "30 min",
+  t_1h: "1 h",
+  t_2h: "2 h",
+  not_found: "Entities not found – pick them in the card editor.",
+  e_title: "Title",
+  e_mode: "Display",
+  e_language: "Language",
+  e_popup: "Popup",
+  e_dropdown: "Inline dropdown",
+  e_auto: "Automatic (HA)",
+  e_de: "German",
+  e_en: "English",
+  e_power: "Power switch",
+  e_nebula: "Nebula light",
+  e_stars: "Stars / laser light",
+  e_rotation: "Rotation speed",
+  e_timer: "Sleep timer"
+} };
+const I18N = { de: DE["star-projector-card"], en: EN["star-projector-card"] };
 
 const STYLE = `
 :host{--acc:#7c5cff;display:block}
@@ -130,14 +171,14 @@ const DEFAULTS = {
   timer: "time.smart_star_projector_timer",
 };
 
-class StarProjectorPopupCard extends HTMLElement {
+class StarProjectorCard extends HTMLElement {
   static getStubConfig() {
     return {
       mode: DEFAULTS.mode, power: DEFAULTS.power, nebula: DEFAULTS.nebula,
       stars: DEFAULTS.stars, rotation: DEFAULTS.rotation, timer: DEFAULTS.timer,
     };
   }
-  static getConfigElement() { return document.createElement("star-projector-popup-card-editor"); }
+  static getConfigElement() { return document.createElement("star-projector-card-editor"); }
   setConfig(c) {
     const prev = this._cfg && this._cfg.mode + "|" + this._cfg.language;
     this._cfg = Object.assign({}, DEFAULTS, c || {});
@@ -300,7 +341,7 @@ ${popup ? `<dialog class="pop" id="pop">
 }
 
 /* ---- visual editor ---- */
-class StarProjectorPopupCardEditor extends HTMLElement {
+class StarProjectorCardEditor extends HTMLElement {
   setConfig(config) { this._config = config; this._render(); }
   set hass(hass) { this._hass = hass; this._render(); }
   _L() {
@@ -344,12 +385,12 @@ class StarProjectorPopupCardEditor extends HTMLElement {
     this._form.data = this._config;
   }
 }
-customElements.define("star-projector-popup-card-editor", StarProjectorPopupCardEditor);
+customElements.define("star-projector-card-editor", StarProjectorCardEditor);
 
-customElements.define("star-projector-popup-card", StarProjectorPopupCard);
+customElements.define("star-projector-card", StarProjectorCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "star-projector-popup-card",
+  type: "star-projector-card",
   name: "Star Projector",
   description: "Smart star projector — popup or dropdown; every entity selectable; DE/EN.",
   preview: false,
