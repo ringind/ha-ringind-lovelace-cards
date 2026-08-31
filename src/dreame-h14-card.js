@@ -89,7 +89,70 @@ ha-card{padding:14px 14px 10px;overflow:hidden}
   :host(.collapsed) .stage{flex-direction:row;padding-top:6px;padding-bottom:6px}
 }
 @media(max-width:480px){.stage{flex-direction:column;text-align:center}.stage svg,.photo{width:52%}}
+
+dialog.pop{border:none;margin:auto;padding:0;width:min(520px, calc(100vw - 32px));max-width:min(520px, calc(100vw - 32px));max-height:calc(100% - 72px);border-radius:var(--ha-dialog-border-radius,28px);color:var(--primary-text-color);background:var(--ha-dialog-surface-background,var(--mdc-theme-surface,var(--card-background-color,#fff)));box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);font-family:var(--mdc-typography-body1-font-family,inherit);font-size:1rem;overflow:hidden;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+dialog.pop[open]{display:flex;flex-direction:column}
+dialog.pop::backdrop{background:transparent}
+.pop-hd{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:20px 22px 6px;font-size:1.35rem;font-weight:600}
+.pop-hd .pt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop-x{flex:0 0 auto;border:none;background:none;cursor:pointer;color:var(--secondary-text-color);width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.pop-x:hover{background:var(--secondary-background-color,rgba(127,127,127,.15))}
+.pop-x ha-icon{--mdc-icon-size:24px}
+.pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 22px 22px}
+.pop-bd.more .sec:first-child{margin-top:6px}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
 `;
+
+const I18N = {
+  de: {
+    disc: "Tanks & Einstellungen", less: "Weniger", close: "Schließen",
+    connected: "Verbunden", offline: "Offline", at_dock: "an der Ladestation",
+    battery: (p, d) => "Akku " + p + " %" + (d ? " · letzte Reinigung " + d : ""),
+    self_clean: "Selbstreinigung", drying: "Trocknung",
+    tanks: "Tanks & Wartung", settings: "Einstellungen", wear: "Verschleiß",
+    all_ready: "Alles bereit", err: (c) => "Fehler " + c, warncode: (c) => "Warnung " + c,
+    a_fresh: "Frischwasser leer", a_dirty: "Schmutzwasser voll", a_clean_tank: "Tank reinigen",
+    a_missing: "Tank fehlt", a_detergent: "Waschmittel leer", a_selfclean: "Selbstreinigung nötig",
+    suction: "Saugkraft", waterflow: "Wasserzufuhr", brush: "Bürste", traction: "Traktion",
+    s_eco: "Eco", s_std: "Standard", s_strong: "Stark", s_turbo: "Turbo",
+    w_low: "Niedrig", w_mid: "Mittel", w_high: "Hoch", w_max: "Max",
+    b_soft: "Sanft", b_normal: "Normal", b_firm: "Kräftig", b_max: "Max",
+    tr_light: "Leicht", tr_bal: "Ausgewogen", tr_strong: "Stark",
+    auto_dry: "Auto-Trocknung", auto_rinse: "Auto-Spülen", auto_det: "Auto-Waschmittel", light: "Licht",
+    w_filter: "Filter", w_front: "Rollbürste vorne", w_back: "Rollbürste hinten",
+    f_cleanings: (n) => "Reinigungen " + n, f_last: (t) => "Zuletzt " + t,
+    f_selfclean: (t) => "Selbstreinigung " + t, f_drying: (t) => "Trocknung " + t,
+    not_found: (p) => "Keine " + p + "*-Entitäten gefunden.",
+    unit_min: "Min", unit_h: "Std", today: "heute", yesterday: "gestern",
+    e_prefix: "Entity-Präfix (Standard: h14_pro)", e_title: "Titel", e_image: "Bild-URL (optional)",
+    e_mode: "Anzeige", e_language: "Sprache", e_popup: "Popup", e_dropdown: "Ausklappen (Dropdown)",
+    e_auto: "Automatisch (HA)", e_de: "Deutsch", e_en: "Englisch",
+  },
+  en: {
+    disc: "Tanks & settings", less: "Less", close: "Close",
+    connected: "Connected", offline: "Offline", at_dock: "at the dock",
+    battery: (p, d) => "Battery " + p + " %" + (d ? " · last clean " + d : ""),
+    self_clean: "Self-cleaning", drying: "Drying",
+    tanks: "Tanks & maintenance", settings: "Settings", wear: "Wear",
+    all_ready: "All ready", err: (c) => "Error " + c, warncode: (c) => "Warning " + c,
+    a_fresh: "Fresh water empty", a_dirty: "Waste tank full", a_clean_tank: "Clean tank",
+    a_missing: "Tank missing", a_detergent: "Detergent empty", a_selfclean: "Self-clean needed",
+    suction: "Suction", waterflow: "Water flow", brush: "Brush", traction: "Traction",
+    s_eco: "Eco", s_std: "Standard", s_strong: "Strong", s_turbo: "Turbo",
+    w_low: "Low", w_mid: "Mid", w_high: "High", w_max: "Max",
+    b_soft: "Soft", b_normal: "Normal", b_firm: "Firm", b_max: "Max",
+    tr_light: "Light", tr_bal: "Balanced", tr_strong: "Strong",
+    auto_dry: "Auto-dry", auto_rinse: "Auto-rinse", auto_det: "Auto-detergent", light: "Light",
+    w_filter: "Filter", w_front: "Front roller", w_back: "Back roller",
+    f_cleanings: (n) => "Cleanings " + n, f_last: (t) => "Last " + t,
+    f_selfclean: (t) => "Self-clean " + t, f_drying: (t) => "Drying " + t,
+    not_found: (p) => "No " + p + "* entities found.",
+    unit_min: "min", unit_h: "h", today: "today", yesterday: "yesterday",
+    e_prefix: "Entity prefix (default: h14_pro)", e_title: "Title", e_image: "Image URL (optional)",
+    e_mode: "Display", e_language: "Language", e_popup: "Popup", e_dropdown: "Inline dropdown",
+    e_auto: "Automatic (HA)", e_de: "German", e_en: "English",
+  },
+};
 
 const MACHINE_SVG = `
 <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dreame H14 Pro Wischsauger">
@@ -117,33 +180,31 @@ const MACHINE_SVG = `
  <path id="bolt" d="M118 120 l-12 20 h8 l-6 16 l16 -22 h-9 Z" fill="#22c55e"/>
 </svg>`;
 
-function fmtDur(sec) {
-  const m = Math.round((Number(sec) || 0) / 60);
-  if (m <= 0) return "0 Min";
-  if (m < 60) return m + " Min";
-  return Math.floor(m / 60) + " Std " + String(m % 60).padStart(2, "0") + " Min";
-}
-function tstamp(iso) {
-  if (!iso || iso === "unknown" || iso === "unavailable") return "–";
-  const d = new Date(iso); if (isNaN(d)) return String(iso);
-  const t = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-  const md = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-  const dd = Math.round((md(new Date()) - md(d)) / 86400000);
-  if (dd <= 0) return "heute " + t;
-  if (dd === 1) return "gestern " + t;
-  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) + " " + t;
-}
-function statusDE(fr) {
+const STATUS_WORDS = {
+  de: { fehler: "Fehler", laedt: "Lädt", selbst: "Selbstreinigung", trocknung: "Trocknung", pause: "Pausiert", reinigt: "Reinigt", bereit: "Bereit" },
+  en: { fehler: "Error", laedt: "Charging", selbst: "Self-cleaning", trocknung: "Drying", pause: "Paused", reinigt: "Cleaning", bereit: "Ready" },
+};
+function statusL(fr, lang) {
+  const W = STATUS_WORDS[lang] || STATUS_WORDS.de;
   const s = (fr || "").toLowerCase();
   if (!s || s === "unknown" || s === "unavailable") return "–";
-  if (/erreur|error|fault/.test(s)) return "Fehler";
-  if (/charge|charg/.test(s)) return "Lädt";
-  if (/auto.?net|automatique|self.?clean/.test(s)) return "Selbstreinigung";
-  if (/s[ée]cha|drying|dry/.test(s)) return "Trocknung";
-  if (/pause/.test(s)) return "Pausiert";
-  if (/nettoy|clean|aspir/.test(s)) return "Reinigt";
-  if (/veille|repos|standby|idle|pr[êe]t/.test(s)) return "Bereit";
+  if (/erreur|error|fault/.test(s)) return W.fehler;
+  if (/charge|charg/.test(s)) return W.laedt;
+  if (/auto.?net|automatique|self.?clean/.test(s)) return W.selbst;
+  if (/s[ée]cha|drying|dry/.test(s)) return W.trocknung;
+  if (/pause/.test(s)) return W.pause;
+  if (/nettoy|clean|aspir/.test(s)) return W.reinigt;
+  if (/veille|repos|standby|idle|pr[êe]t/.test(s)) return W.bereit;
   return fr;
+}
+// canonical status keys, independent of language, for the run/dry/charge logic
+function statusKind(fr) {
+  const s = (fr || "").toLowerCase();
+  if (/auto.?net|automatique|self.?clean/.test(s)) return "selfclean";
+  if (/s[ée]cha|drying|dry/.test(s)) return "drying";
+  if (/pause/.test(s)) return "paused";
+  if (/nettoy|clean|aspir/.test(s)) return "cleaning";
+  return "other";
 }
 function battIcon(pct, charging) {
   if (charging) return "mdi:battery-charging";
@@ -157,18 +218,51 @@ class DreameH14Card extends HTMLElement {
   static getStubConfig() { return { prefix: "h14_pro" }; }
   static getConfigElement() { return document.createElement("dreame-h14-card-editor"); }
   setConfig(c) {
-    this._cfg = Object.assign({ prefix: "h14_pro" }, c || {});
+    const prevSig = this._psig;
+    this._cfg = Object.assign({ prefix: "h14_pro", mode: "popup", language: "auto" }, c || {});
     this._p = this._cfg.prefix;
     this._open = false;
+    this._popup = this._cfg.mode !== "dropdown";
+    this._psig = this._cfg.mode + "|" + this._cfg.language;
+    if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
+      this.shadowRoot.innerHTML = ""; this._sig = null;
+      this._build(); if (this._hass) this._render();
+    }
   }
   getCardSize() { return 15; }
 
+  _lang() {
+    const c = this._cfg.language || "auto";
+    if (c === "de" || c === "en") return c;
+    return (this._hass && this._hass.language || "").toLowerCase().startsWith("de") ? "de" : "en";
+  }
+  _L() { return I18N[this._lang()] || I18N.de; }
+  _fmtDur(sec) {
+    const L = this._L();
+    const m = Math.round((Number(sec) || 0) / 60);
+    if (m <= 0) return "0 " + L.unit_min;
+    if (m < 60) return m + " " + L.unit_min;
+    return Math.floor(m / 60) + " " + L.unit_h + " " + String(m % 60).padStart(2, "0") + " " + L.unit_min;
+  }
+  _tstamp(iso) {
+    const L = this._L();
+    if (!iso || iso === "unknown" || iso === "unavailable") return "–";
+    const d = new Date(iso); if (isNaN(d)) return String(iso);
+    const t = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    const md = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const dd = Math.round((md(new Date()) - md(d)) / 86400000);
+    if (dd <= 0) return L.today + " " + t;
+    if (dd === 1) return L.yesterday + " " + t;
+    return d.toLocaleDateString(this._lang() === "de" ? "de-DE" : "en-GB", { day: "2-digit", month: "2-digit" }) + " " + t;
+  }
+
   _toggle() {
+    if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
     this.$("disc").classList.toggle("open", this._open);
     this.classList.toggle("collapsed", !this._open);
-    this.$("discTxt").textContent = this._open ? "Weniger" : "Tanks & Einstellungen";
+    this.$("discTxt").textContent = this._open ? this._L().less : this._L().disc;
   }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
@@ -182,11 +276,13 @@ class DreameH14Card extends HTMLElement {
   _svc(dom, srv, data) { this._hass.callService(dom, srv, data); }
 
   _build() {
-    const r = this.attachShadow({ mode: "open" });
+    const r = this.shadowRoot || this.attachShadow({ mode: "open" });
+    const L = this._L();
+    const ttl = this._cfg.title || "H14 Pro";
     r.innerHTML = `<style>${STYLE}</style>
 <ha-card>
  <div class="hdr">
-  <div class="ttl"><span class="brand">DREAME</span><span class="model" id="model">H14 Pro</span></div>
+  <div class="ttl"><span class="brand">DREAME</span><span class="model" id="model">${ttl}</span></div>
   <div class="hstat">
    <span class="dot" id="dot"></span><span id="online"></span>
    <span class="batt"><ha-icon id="batticon" icon="mdi:battery"></ha-icon><span id="batt">–</span></span>
@@ -202,13 +298,21 @@ class DreameH14Card extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">Tanks &amp; Einstellungen</span><ha-icon icon="mdi:chevron-down"></ha-icon></button>
- <div class="more" id="more" hidden><div id="body"></div></div>
-</ha-card>`;
+ <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="mdi:chevron-down"></ha-icon></button>
+ ${this._popup ? "" : `<div class="more" id="more" hidden><div id="body"></div></div>`}
+</ha-card>
+${this._popup ? `<dialog class="pop" id="pop">
+ <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
+ <div class="pop-bd more" id="more"><div id="body"></div></div>
+</dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
     this.classList.add("collapsed");
     this.$("stage").addEventListener("click", () => this._mi(this._id("sensor", "status")));
     this.$("disc").addEventListener("click", () => this._toggle());
+    if (this._popup) {
+      this.$("popX").onclick = () => this.$("pop").close();
+      this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
+    }
     const act = (e) => {
       const el = e.target.closest("[data-act]"); if (!el || el.hasAttribute("disabled")) return;
       const [k, a, b] = el.dataset.act.split("|");
@@ -225,9 +329,8 @@ class DreameH14Card extends HTMLElement {
   _render() {
     if (!this.shadowRoot) return;
     if (!this._e("sensor", "status") && !this._e("sensor", "battery")) {
-      this.$("body").innerHTML = `<div class="warn">Keine <b>${this._p}*</b>-Entitäten gefunden.</div>`;
-      this.$("more").hidden = false;
-      this.classList.remove("collapsed");
+      this.$("body").innerHTML = `<div class="warn">${this._L().not_found("<b>" + this._p + "</b>")}</div>`;
+      if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
     // render-signature guard: only rebuild the interactive body when a shown value changed
@@ -248,13 +351,16 @@ class DreameH14Card extends HTMLElement {
     if (sig === this._sig) return;
     this._sig = sig;
 
+    const L = this._L();
     this.$("model").textContent = this._cfg.title || "H14 Pro";
+    if (this.$("popT")) this.$("popT").textContent = this._cfg.title || "H14 Pro";
     const rawStatus = this._st("sensor", "status") || "";
-    const label = statusDE(rawStatus);
+    const label = statusL(rawStatus, this._lang());
+    const kind = statusKind(rawStatus);
     const charging = this._bool("binary_sensor", "charging");
     const online = this._bool("binary_sensor", "online");
-    const cleaning = label === "Reinigt" || label === "Pausiert";
-    const drying = label === "Trocknung" || label === "Selbstreinigung";
+    const cleaning = kind === "cleaning" || kind === "paused";
+    const drying = kind === "drying" || kind === "selfclean";
     const errCode = this._st("sensor", "error_codes");
     const warnCode = this._st("sensor", "warnings");
     const hasErr = errCode && !["0", "none", "unknown", "unavailable", ""].includes(String(errCode).toLowerCase());
@@ -265,16 +371,16 @@ class DreameH14Card extends HTMLElement {
 
     // header
     this.$("dot").className = "dot" + (online ? " ok" : "");
-    this.$("online").textContent = online ? "Verbunden" : "Offline";
+    this.$("online").textContent = online ? L.connected : L.offline;
     const pct = this._num("sensor", "battery");
     this.$("batt").textContent = pct == null ? "–" : Math.round(pct) + " %";
     this.$("batticon").setAttribute("icon", battIcon(pct, charging));
 
     // status block
     this.$("big").textContent = label;
-    this.$("sub").textContent = charging && !cleaning && !drying ? "an der Ladestation" : "";
+    this.$("sub").textContent = charging && !cleaning && !drying ? L.at_dock : "";
     const lastDur = this._num("sensor", "last_clean_duration");
-    this.$("meta").textContent = pct != null ? "Akku " + Math.round(pct) + " %" + (lastDur ? " · letzte Reinigung " + fmtDur(lastDur) : "") : "";
+    this.$("meta").textContent = pct != null ? L.battery(Math.round(pct), lastDur ? this._fmtDur(lastDur) : "") : "";
     this.$("fill").style.width = (pct != null ? Math.max(0, Math.min(100, pct)) : 0) + "%";
 
     // water level in the SVG tank (y grows downward; 0% => empty at bottom)
@@ -289,19 +395,19 @@ class DreameH14Card extends HTMLElement {
     // ---- alerts ----
     const A = (label2, d, s) => ({ label: label2, on: this._bool(d, s), id: this._id(d, s) });
     const alerts = [
-      A("Frischwasser leer", "binary_sensor", "clean_water_tank_empty"),
-      A("Schmutzwasser voll", "binary_sensor", "dirty_water_tank_full"),
-      A("Tank reinigen", "binary_sensor", "dirty_water_tank_needs_cleaning"),
-      A("Tank fehlt", "binary_sensor", "dirty_water_tank_missing"),
-      A("Waschmittel leer", "binary_sensor", "detergent_empty"),
-      A("Selbstreinigung nötig", "binary_sensor", "self_cleaning_recommended_dirty_brush_tube"),
+      A(L.a_fresh, "binary_sensor", "clean_water_tank_empty"),
+      A(L.a_dirty, "binary_sensor", "dirty_water_tank_full"),
+      A(L.a_clean_tank, "binary_sensor", "dirty_water_tank_needs_cleaning"),
+      A(L.a_missing, "binary_sensor", "dirty_water_tank_missing"),
+      A(L.a_detergent, "binary_sensor", "detergent_empty"),
+      A(L.a_selfclean, "binary_sensor", "self_cleaning_recommended_dirty_brush_tube"),
     ];
     const active = alerts.filter((x) => x.on);
-    if (hasErr) active.unshift({ label: "Fehler " + errCode, on: true, id: this._id("sensor", "error_codes") });
-    if (warnCode && !["0", "unknown", ""].includes(String(warnCode))) active.push({ label: "Warnung " + warnCode, on: true, id: this._id("sensor", "warnings") });
+    if (hasErr) active.unshift({ label: L.err(errCode), on: true, id: this._id("sensor", "error_codes") });
+    if (warnCode && !["0", "unknown", ""].includes(String(warnCode))) active.push({ label: L.warncode(warnCode), on: true, id: this._id("sensor", "warnings") });
     const alertHtml = active.length
       ? active.map((x) => `<span class="al bad" data-act="more|${x.id}"><ha-icon icon="mdi:alert-circle"></ha-icon>${x.label}</span>`).join("")
-      : `<span class="al" data-act="more|${this._id("sensor", "status")}"><ha-icon icon="mdi:check-circle"></ha-icon>Alles bereit</span>`;
+      : `<span class="al" data-act="more|${this._id("sensor", "status")}"><ha-icon icon="mdi:check-circle"></ha-icon>${L.all_ready}</span>`;
 
     // ---- settings ----
     const lvl = (label2, d, s, labels) => {
@@ -315,10 +421,10 @@ class DreameH14Card extends HTMLElement {
     let tracRow = "";
     if (trac && Array.isArray(trac.attributes.options) && trac.attributes.options.length) {
       const cur = trac.state;
-      const map = { "Léger": "Leicht", "Équilibré": "Ausgewogen", "Fort": "Stark" };
+      const map = { "Léger": L.tr_light, "Équilibré": L.tr_bal, "Fort": L.tr_strong };
       const pills = trac.attributes.options.map((o) =>
         `<button class="pill${cur === o ? " on" : ""}" data-act="sel|${this._id("select", "traction_force")}|${o}">${map[o] || o}</button>`).join("");
-      tracRow = `<div class="segrow"><span class="seglbl">Traktion</span><span class="pills">${pills}</span></div>`;
+      tracRow = `<div class="segrow"><span class="seglbl">${L.traction}</span><span class="pills">${pills}</span></div>`;
     }
     const tog = (label2, d, s, icon) => {
       const id = this._id(d, s);
@@ -335,37 +441,37 @@ class DreameH14Card extends HTMLElement {
     // ---- footer ----
     const foot = [];
     const tc = this._num("sensor", "total_clean_count");
-    if (tc != null) foot.push("Reinigungen " + Math.round(tc));
+    if (tc != null) foot.push(L.f_cleanings(Math.round(tc)));
     const lc = this._st("sensor", "last_clean");
-    if (lc) foot.push("Zuletzt " + tstamp(lc));
+    if (lc) foot.push(L.f_last(this._tstamp(lc)));
     const tsc = this._num("sensor", "total_self_clean_time");
-    if (tsc != null) foot.push("Selbstreinigung " + fmtDur(tsc));
+    if (tsc != null) foot.push(L.f_selfclean(this._fmtDur(tsc)));
     const tsd = this._num("sensor", "total_self_dry_time");
-    if (tsd != null) foot.push("Trocknung " + fmtDur(tsd));
+    if (tsd != null) foot.push(L.f_drying(this._fmtDur(tsd)));
 
     this.$("cmds").innerHTML =
-      `<button class="cmd primary" data-act="press|${this._id("button", "start_self_cleaning")}"><ha-icon icon="mdi:auto-fix"></ha-icon>Selbstreinigung</button>` +
-      `<button class="cmd" data-act="press|${this._id("button", "start_self_drying")}"><ha-icon icon="mdi:weather-sunny"></ha-icon>Trocknung</button>`;
+      `<button class="cmd primary" data-act="press|${this._id("button", "start_self_cleaning")}"><ha-icon icon="mdi:auto-fix"></ha-icon>${L.self_clean}</button>` +
+      `<button class="cmd" data-act="press|${this._id("button", "start_self_drying")}"><ha-icon icon="mdi:weather-sunny"></ha-icon>${L.drying}</button>`;
     this.$("body").innerHTML =
-      `<div class="sec"><ha-icon icon="mdi:water-alert"></ha-icon>Tanks &amp; Wartung</div>` +
+      `<div class="sec"><ha-icon icon="mdi:water-alert"></ha-icon>${L.tanks}</div>` +
       `<div class="alerts">${alertHtml}</div>` +
 
-      `<div class="sec"><ha-icon icon="mdi:tune"></ha-icon>Einstellungen</div>` +
-      lvl("Saugkraft", "number", "suction_power_custom", ["Eco", "Standard", "Stark", "Turbo"]) +
-      lvl("Wasserzufuhr", "number", "water_flow_custom", ["Niedrig", "Mittel", "Hoch", "Max"]) +
-      lvl("Bürste", "number", "brush_speed_custom", ["Sanft", "Normal", "Kräftig", "Max"]) +
+      `<div class="sec"><ha-icon icon="mdi:tune"></ha-icon>${L.settings}</div>` +
+      lvl(L.suction, "number", "suction_power_custom", [L.s_eco, L.s_std, L.s_strong, L.s_turbo]) +
+      lvl(L.waterflow, "number", "water_flow_custom", [L.w_low, L.w_mid, L.w_high, L.w_max]) +
+      lvl(L.brush, "number", "brush_speed_custom", [L.b_soft, L.b_normal, L.b_firm, L.b_max]) +
       tracRow +
       `<div class="chips">
-        ${tog("Auto-Trocknung", "switch", "auto_drying", "mdi:weather-sunny")}
-        ${tog("Auto-Spülen", "switch", "auto_rinse", "mdi:water-sync")}
-        ${tog("Auto-Waschmittel", "switch", "auto_detergent_mixing", "mdi:bottle-tonic")}
-        ${tog("Licht", "switch", "light", "mdi:lightbulb")}
+        ${tog(L.auto_dry, "switch", "auto_drying", "mdi:weather-sunny")}
+        ${tog(L.auto_rinse, "switch", "auto_rinse", "mdi:water-sync")}
+        ${tog(L.auto_det, "switch", "auto_detergent_mixing", "mdi:bottle-tonic")}
+        ${tog(L.light, "switch", "light", "mdi:lightbulb")}
        </div>` +
 
-      `<div class="sec"><ha-icon icon="mdi:wrench-clock"></ha-icon>Verschleiß</div>` +
-      wear("Filter", "sensor", "filter_hours_left", "mdi:air-filter") +
-      wear("Rollbürste vorne", "sensor", "front_roller_brush_hours_left", "mdi:rotate-right") +
-      wear("Rollbürste hinten", "sensor", "back_roller_brush_hours_left", "mdi:rotate-left") +
+      `<div class="sec"><ha-icon icon="mdi:wrench-clock"></ha-icon>${L.wear}</div>` +
+      wear(L.w_filter, "sensor", "filter_hours_left", "mdi:air-filter") +
+      wear(L.w_front, "sensor", "front_roller_brush_hours_left", "mdi:rotate-right") +
+      wear(L.w_back, "sensor", "back_roller_brush_hours_left", "mdi:rotate-left") +
 
       (foot.length ? `<div class="foot">${foot.map((x) => `<span>${x}</span>`).join("")}</div>` : "");
   }
@@ -375,26 +481,32 @@ class DreameH14Card extends HTMLElement {
 class DreameH14CardEditor extends HTMLElement {
   setConfig(config) { this._config = config; this._render(); }
   set hass(hass) { this._hass = hass; this._render(); }
+  _L() {
+    const c = (this._config && this._config.language) || "auto";
+    if (c === "de" || c === "en") return I18N[c];
+    return (this._hass && this._hass.language || "").toLowerCase().startsWith("de") ? I18N.de : I18N.en;
+  }
   _render() {
     if (!this._hass || !this._config) return;
     if (!this._form) {
       this._form = document.createElement("ha-form");
-      this._form.computeLabel = (s) => ({
-        prefix: "Entity-Präfix (Standard: h14_pro)",
-        title: "Titel (optional)",
-        image: "Bild-URL – ersetzt die Illustration (optional)",
-      }[s.name] || s.name);
       this._form.addEventListener("value-changed", (ev) => {
-        this.dispatchEvent(new CustomEvent("config-changed", {
-          detail: { config: ev.detail.value }, bubbles: true, composed: true,
-        }));
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: ev.detail.value }, bubbles: true, composed: true }));
       });
       this.appendChild(this._form);
     }
+    const L = this._L();
+    this._form.computeLabel = (s) => ({
+      prefix: L.e_prefix, title: L.e_title, image: L.e_image, mode: L.e_mode, language: L.e_language,
+    }[s.name] || s.name);
     this._form.hass = this._hass;
     this._form.schema = [
-      { name: "prefix", selector: { text: {} } },
       { name: "title", selector: { text: {} } },
+      { name: "mode", selector: { select: { mode: "dropdown", options: [
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+      { name: "language", selector: { select: { mode: "dropdown", options: [
+        { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
+      { name: "prefix", selector: { text: {} } },
       { name: "image", selector: { text: {} } },
     ];
     this._form.data = this._config;

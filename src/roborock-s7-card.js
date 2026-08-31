@@ -85,21 +85,94 @@ ha-card{padding:14px 14px 10px;overflow:hidden}
   :host(.collapsed) .stage{flex-direction:row;padding-top:6px;padding-bottom:6px}
 }
 @media(max-width:480px){.stage{flex-direction:column}.map{width:100%;max-width:none;aspect-ratio:16/10}}
+
+dialog.pop{border:none;margin:auto;padding:0;width:min(540px, calc(100vw - 32px));max-width:min(540px, calc(100vw - 32px));max-height:calc(100% - 72px);border-radius:var(--ha-dialog-border-radius,28px);color:var(--primary-text-color);background:var(--ha-dialog-surface-background,var(--mdc-theme-surface,var(--card-background-color,#fff)));box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);font-family:var(--mdc-typography-body1-font-family,inherit);font-size:1rem;overflow:hidden;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+dialog.pop[open]{display:flex;flex-direction:column}
+dialog.pop::backdrop{background:transparent}
+.pop-hd{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:20px 22px 6px;font-size:1.35rem;font-weight:600}
+.pop-hd .pt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop-x{flex:0 0 auto;border:none;background:none;cursor:pointer;color:var(--secondary-text-color);width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.pop-x:hover{background:var(--secondary-background-color,rgba(127,127,127,.15))}
+.pop-x ha-icon{--mdc-icon-size:24px}
+.pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 22px 22px}
+.pop-bd.more .sec:first-child{margin-top:6px}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
 `;
 
-const STATUS_DE = {
-  charging: "Lädt", charging_complete: "Vollgeladen", charging_problem: "Ladeproblem",
-  idle: "Bereit", starting: "Startet", cleaning: "Reinigt", paused: "Pausiert",
-  segment_cleaning: "Reinigt Bereich", segment_mopping: "Wischt Bereich",
-  zoned_cleaning: "Zonenreinigung", zoned_mopping: "Zone wischen",
-  spot_cleaning: "Punktreinigung", returning_home: "Fährt zur Basis", docking: "Dockt an",
-  going_to_target: "Fährt zum Ziel", washing_the_mop: "Wäscht Mopp", washing_the_mop_2: "Wäscht Mopp",
-  going_to_wash_the_mop: "Fährt zum Moppwaschen", emptying_the_bin: "Leert Behälter",
-  air_drying_stopping: "Mopp-Trocknung", mapping: "Kartiert", error: "Fehler",
-  charger_disconnected: "Ladestation getrennt", device_offline: "Offline", locked: "Gesperrt",
-  attaching_the_mop: "Mopp anbringen", detaching_the_mop: "Mopp abnehmen",
-  robot_status_mopping: "Wischt", clean_mop_mopping: "Wischt", segment_clean_mop_mopping: "Wischt Bereich",
+const STATUS = {
+  de: {
+    charging: "Lädt", charging_complete: "Vollgeladen", charging_problem: "Ladeproblem",
+    idle: "Bereit", starting: "Startet", cleaning: "Reinigt", paused: "Pausiert",
+    segment_cleaning: "Reinigt Bereich", segment_mopping: "Wischt Bereich",
+    zoned_cleaning: "Zonenreinigung", zoned_mopping: "Zone wischen",
+    spot_cleaning: "Punktreinigung", returning_home: "Fährt zur Basis", docking: "Dockt an",
+    going_to_target: "Fährt zum Ziel", washing_the_mop: "Wäscht Mopp", washing_the_mop_2: "Wäscht Mopp",
+    going_to_wash_the_mop: "Fährt zum Moppwaschen", emptying_the_bin: "Leert Behälter",
+    air_drying_stopping: "Mopp-Trocknung", mapping: "Kartiert", error: "Fehler",
+    charger_disconnected: "Ladestation getrennt", device_offline: "Offline", locked: "Gesperrt",
+    attaching_the_mop: "Mopp anbringen", detaching_the_mop: "Mopp abnehmen",
+    robot_status_mopping: "Wischt", clean_mop_mopping: "Wischt", segment_clean_mop_mopping: "Wischt Bereich",
+  },
+  en: {
+    charging: "Charging", charging_complete: "Fully charged", charging_problem: "Charging problem",
+    idle: "Ready", starting: "Starting", cleaning: "Cleaning", paused: "Paused",
+    segment_cleaning: "Cleaning area", segment_mopping: "Mopping area",
+    zoned_cleaning: "Zone cleaning", zoned_mopping: "Zone mopping",
+    spot_cleaning: "Spot cleaning", returning_home: "Returning to dock", docking: "Docking",
+    going_to_target: "Going to target", washing_the_mop: "Washing mop", washing_the_mop_2: "Washing mop",
+    going_to_wash_the_mop: "Going to wash mop", emptying_the_bin: "Emptying bin",
+    air_drying_stopping: "Drying mop", mapping: "Mapping", error: "Error",
+    charger_disconnected: "Charger disconnected", device_offline: "Offline", locked: "Locked",
+    attaching_the_mop: "Attaching mop", detaching_the_mop: "Detaching mop",
+    robot_status_mopping: "Mopping", clean_mop_mopping: "Mopping", segment_clean_mop_mopping: "Mopping area",
+  },
 };
+
+const I18N = {
+  de: {
+    disc: "Bereiche & Einstellungen", less: "Weniger", close: "Schließen",
+    start: "Start", pause: "Pause", stop: "Stopp", dock: "Basis", locate: "Orten",
+    by_area: "Reinigung nach Bereich", suction: "Saugkraft", mop_settings: "Wischeinstellungen",
+    clean_status: "Reinigungsstatus", active: "aktiv",
+    select_areas: "Bereiche wählen", clean_n: (n) => n + " Bereich" + (n > 1 ? "e" : "") + " reinigen",
+    all: "Alles", no_rooms: (e) => "Keine Raumdaten in " + e + ".",
+    room: (r) => "Raum: " + r, at_dock: "an der Basis",
+    fan_quiet: "Leise", fan_bal: "Standard", fan_turbo: "Turbo", fan_max: "Max", fan_maxplus: "Max+",
+    mop_mode: "Modus", mop_vac: "Saugen", mop_vacmop: "Saugen & Wischen", mop_mop: "Wischen",
+    mop_int: "Intensität", int_off: "Aus", int_mild: "Leicht", int_std: "Standard", int_intense: "Intensiv",
+    mop_wmode: "Wisch-Modus", wm_std: "Standard", wm_deep: "Deep", wm_deepplus: "Deep+", wm_fast: "Schnell",
+    last_start: "Letzter Start", last_end: "Letztes Ende",
+    vac_err: "Sauger-Fehler", dock_err: "Dock-Fehler", none: "Keiner",
+    presence_clean: "Präsenzsensitiv saugen", due_today: "Heute fällig",
+    cleanings: (n) => "Reinigungen " + n, total_area: (n) => "Fläche gesamt " + n + " k m²",
+    mop_attached: "Mopp angebracht", not_found: (e) => "Staubsauger " + e + " nicht gefunden.",
+    e_vacuum: "Staubsauger (vacuum)", e_map: "Karten-Bild (image)",
+    e_rooms: "Raumdaten (image mit `rooms`)", e_title: "Titel", e_mode: "Anzeige", e_language: "Sprache",
+    e_popup: "Popup", e_dropdown: "Ausklappen (Dropdown)", e_auto: "Automatisch (HA)", e_de: "Deutsch", e_en: "Englisch",
+  },
+  en: {
+    disc: "Areas & settings", less: "Less", close: "Close",
+    start: "Start", pause: "Pause", stop: "Stop", dock: "Dock", locate: "Locate",
+    by_area: "Clean by area", suction: "Suction", mop_settings: "Mop settings",
+    clean_status: "Cleaning status", active: "active",
+    select_areas: "Select areas", clean_n: (n) => "Clean " + n + " area" + (n > 1 ? "s" : ""),
+    all: "All", no_rooms: (e) => "No room data in " + e + ".",
+    room: (r) => "Room: " + r, at_dock: "at the dock",
+    fan_quiet: "Quiet", fan_bal: "Balanced", fan_turbo: "Turbo", fan_max: "Max", fan_maxplus: "Max+",
+    mop_mode: "Mode", mop_vac: "Vacuum", mop_vacmop: "Vacuum & mop", mop_mop: "Mop",
+    mop_int: "Intensity", int_off: "Off", int_mild: "Mild", int_std: "Standard", int_intense: "Intense",
+    mop_wmode: "Mop mode", wm_std: "Standard", wm_deep: "Deep", wm_deepplus: "Deep+", wm_fast: "Fast",
+    last_start: "Last start", last_end: "Last end",
+    vac_err: "Vacuum error", dock_err: "Dock error", none: "None",
+    presence_clean: "Presence-based clean", due_today: "Due today",
+    cleanings: (n) => "Cleanings " + n, total_area: (n) => "Total area " + n + " k m²",
+    mop_attached: "Mop attached", not_found: (e) => "Vacuum " + e + " not found.",
+    e_vacuum: "Vacuum", e_map: "Map image (image)",
+    e_rooms: "Room data (image with `rooms`)", e_title: "Title", e_mode: "Display", e_language: "Language",
+    e_popup: "Popup", e_dropdown: "Inline dropdown", e_auto: "Automatic (HA)", e_de: "German", e_en: "English",
+  },
+};
+
 
 function fmtSecs(s) {
   const m = Math.round((Number(s) || 0) / 60);
@@ -159,18 +232,35 @@ class RoborockS7Card extends HTMLElement {
         { entity: "binary_sensor.wz_fp2_presence", name: "WZ" },
       ],
     };
+    d.mode = "popup"; d.language = "auto";
+    const prevSig = this._psig;
     this._cfg = Object.assign(d, c || {});
     this._sel = new Set();
     this._open = false;
+    this._popup = this._cfg.mode !== "dropdown";
+    this._psig = this._cfg.mode + "|" + this._cfg.language;
+    if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
+      this.shadowRoot.innerHTML = ""; this._sig = null;
+      this._build(); if (this._hass) this._render();
+    }
   }
   getCardSize() { return 16; }
 
+  _lang() {
+    const c = this._cfg.language || "auto";
+    if (c === "de" || c === "en") return c;
+    return (this._hass && this._hass.language || "").toLowerCase().startsWith("de") ? "de" : "en";
+  }
+  _L() { return I18N[this._lang()] || I18N.de; }
+  _status(raw) { const m = STATUS[this._lang()] || STATUS.de; return m[raw] || (raw ? raw.replace(/_/g, " ") : "–"); }
+
   _toggle() {
+    if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
     this.$("disc").classList.toggle("open", this._open);
     this.classList.toggle("collapsed", !this._open);
-    this.$("discTxt").textContent = this._open ? "Weniger" : "Bereiche & Einstellungen";
+    this.$("discTxt").textContent = this._open ? this._L().less : this._L().disc;
   }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
@@ -185,10 +275,10 @@ class RoborockS7Card extends HTMLElement {
   _syncGo() {
     const btn = this.shadowRoot.querySelector('.go[data-act="clean"]');
     if (!btn) return;
+    const L = this._L();
     const n = this._rooms().filter((x) => x.area_id && this._sel.has(x.area_id)).length;
     if (n) btn.removeAttribute("disabled"); else btn.setAttribute("disabled", "");
-    btn.innerHTML = `<ha-icon icon="mdi:robot-vacuum"></ha-icon>` +
-      (n ? n + " Bereich" + (n > 1 ? "e" : "") + " reinigen" : "Bereiche wählen");
+    btn.innerHTML = `<ha-icon icon="mdi:robot-vacuum"></ha-icon>` + (n ? L.clean_n(n) : L.select_areas);
   }
 
   _rooms() {
@@ -208,11 +298,13 @@ class RoborockS7Card extends HTMLElement {
   }
 
   _build() {
-    const r = this.attachShadow({ mode: "open" });
+    const r = this.shadowRoot || this.attachShadow({ mode: "open" });
+    const L = this._L();
+    const ttl = this._cfg.title || "S7 MaxV";
     r.innerHTML = `<style>${STYLE}</style>
 <ha-card>
  <div class="hdr">
-  <div class="ttl"><span class="brand">ROBOROCK</span><span class="model" id="model">S7 MaxV</span></div>
+  <div class="ttl"><span class="brand">ROBOROCK</span><span class="model" id="model">${ttl}</span></div>
   <div class="hstat">
    <span class="pres" id="dnd" hidden><ha-icon icon="mdi:sleep"></ha-icon></span>
    <span class="batt"><ha-icon id="batticon" icon="mdi:battery"></ha-icon><span id="batt">–</span></span>
@@ -220,7 +312,7 @@ class RoborockS7Card extends HTMLElement {
   </div>
  </div>
  <div class="stage">
-  <img class="map" id="map" alt="Karte">
+  <img class="map" id="map" alt="map">
   <div class="status">
    <div class="big" id="big">–</div>
    <div class="sub" id="sub"></div>
@@ -229,12 +321,20 @@ class RoborockS7Card extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">Bereiche &amp; Einstellungen</span><ha-icon icon="mdi:chevron-down"></ha-icon></button>
- <div class="more" id="more" hidden><div id="body"></div></div>
-</ha-card>`;
+ <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="mdi:chevron-down"></ha-icon></button>
+ ${this._popup ? "" : `<div class="more" id="more" hidden><div id="body"></div></div>`}
+</ha-card>
+${this._popup ? `<dialog class="pop" id="pop">
+ <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
+ <div class="pop-bd more" id="more"><div id="body"></div></div>
+</dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
     this.classList.add("collapsed");
     this.$("disc").addEventListener("click", () => this._toggle());
+    if (this._popup) {
+      this.$("popX").onclick = () => this.$("pop").close();
+      this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
+    }
     this.$("map").addEventListener("click", () => this._mi(this._cfg.map_entity));
     this.$("dnd").style.cursor = "pointer";
     this.$("dnd").addEventListener("click", () => this._svc("switch", "toggle", { entity_id: this._cfg.dnd_switch }));
@@ -286,9 +386,8 @@ class RoborockS7Card extends HTMLElement {
   _render() {
     if (!this.shadowRoot) return;
     if (!this._e(this._cfg.vacuum)) {
-      this.$("body").innerHTML = `<div class="warn">Staubsauger <b>${this._cfg.vacuum}</b> nicht gefunden.</div>`;
-      this.$("more").hidden = false;
-      this.classList.remove("collapsed");
+      this.$("body").innerHTML = `<div class="warn">${this._L().not_found("<b>" + this._cfg.vacuum + "</b>")}</div>`;
+      if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
     // map <img> is refreshed on every tick (cheap, no interactive DOM)
@@ -310,7 +409,9 @@ class RoborockS7Card extends HTMLElement {
     if (sig === this._sig) return;
     this._sig = sig;
 
+    const L = this._L();
     this.$("model").textContent = this._cfg.title || "S7 MaxV";
+    if (this.$("popT")) this.$("popT").textContent = this._cfg.title || "S7 MaxV";
     const vac = this._st(this._cfg.vacuum);
     const rawStatus = this._st(this._cfg.status_sensor) || vac || "";
     const cleaning = /clean|mopp|zone|spot|segment|going_to_target|starting/.test(rawStatus) && !/complete/.test(rawStatus);
@@ -333,9 +434,9 @@ class RoborockS7Card extends HTMLElement {
     this.$("dnd").hidden = this._st(this._cfg.dnd_switch) !== "on";
 
     // status
-    this.$("big").textContent = STATUS_DE[rawStatus] || (rawStatus ? rawStatus.replace(/_/g, " ") : "–");
+    this.$("big").textContent = this._status(rawStatus);
     const room = this._st(this._cfg.current_room_sensor);
-    this.$("sub").textContent = cleaning && room && room !== "unknown" ? "Raum: " + room : (charging ? "an der Basis" : "");
+    this.$("sub").textContent = cleaning && room && room !== "unknown" ? L.room(room) : (charging ? L.at_dock : "");
     const area = this._num(this._cfg.area_sensor);
     const secs = this._num(this._cfg.time_sensor);
     const parts = [];
@@ -351,11 +452,11 @@ class RoborockS7Card extends HTMLElement {
     const cb = (cmd, icon, label, primary) =>
       `<button class="cmd${primary ? " primary" : ""}" data-cmd="${cmd}"><ha-icon icon="${icon}"></ha-icon>${label}</button>`;
     this.$("cmds").innerHTML =
-      cb("start", "mdi:play", "Start", !cleaning) +
-      cb("pause", "mdi:pause", "Pause", cleaning) +
-      cb("stop", "mdi:stop", "Stopp") +
-      cb("dock", "mdi:home-import-outline", "Basis") +
-      cb("locate", "mdi:map-marker", "Orten");
+      cb("start", "mdi:play", L.start, !cleaning) +
+      cb("pause", "mdi:pause", L.pause, cleaning) +
+      cb("stop", "mdi:stop", L.stop) +
+      cb("dock", "mdi:home-import-outline", L.dock) +
+      cb("locate", "mdi:map-marker", L.locate);
 
     // ---- body ----
     const rooms = this._rooms();
@@ -374,7 +475,7 @@ class RoborockS7Card extends HTMLElement {
     const statRow = (icon, label, val, isErr, entId) =>
       `<div class="stat${isErr ? " err" : ""}" data-act="more|${entId}"><ha-icon icon="${icon}"></ha-icon>${label}<b>${val}</b></div>`;
     const fanCur = this._attr(this._cfg.vacuum, "fan_speed");
-    const fanPills = [["quiet", "Leise"], ["balanced", "Standard"], ["turbo", "Turbo"], ["max", "Max"], ["max_plus", "Max+"]]
+    const fanPills = [["quiet", L.fan_quiet], ["balanced", L.fan_bal], ["turbo", L.fan_turbo], ["max", L.fan_max], ["max_plus", L.fan_maxplus]]
       .map(([v, l]) => `<button class="pill${fanCur === v ? " on" : ""}" data-act="fan|${v}">${l}</button>`).join("");
 
     const mopActive = this._st(this._cfg.mop_active_sensor) === "on";
@@ -386,38 +487,38 @@ class RoborockS7Card extends HTMLElement {
     const totalCount = this._num(this._cfg.total_count_sensor);
     const totalArea = this._num(this._cfg.total_area_sensor);
     const foot = [];
-    if (totalCount != null) foot.push("Reinigungen " + Math.round(totalCount));
-    if (totalArea != null) foot.push("Fläche gesamt " + Math.round(totalArea / 1000) + " k m²");
-    if (mopOn) foot.push("Mopp angebracht");
+    if (totalCount != null) foot.push(L.cleanings(Math.round(totalCount)));
+    if (totalArea != null) foot.push(L.total_area(Math.round(totalArea / 1000)));
+    if (mopOn) foot.push(L.mop_attached);
 
     this.$("body").innerHTML =
-      `<div class="sec"><ha-icon icon="mdi:vector-square"></ha-icon>Reinigung nach Bereich</div>` +
+      `<div class="sec"><ha-icon icon="mdi:vector-square"></ha-icon>${L.by_area}</div>` +
       (rooms.length
         ? `<div class="rooms">${roomChips}</div>
            <div class="gorow">
             <button class="go" data-act="clean"${selCount ? "" : " disabled"}>
-              <ha-icon icon="mdi:robot-vacuum"></ha-icon>${selCount ? selCount + " Bereich" + (selCount > 1 ? "e" : "") + " reinigen" : "Bereiche wählen"}
+              <ha-icon icon="mdi:robot-vacuum"></ha-icon>${selCount ? L.clean_n(selCount) : L.select_areas}
             </button>
-            <button class="go ghost" data-act="all"><ha-icon icon="mdi:play"></ha-icon>Alles</button>
+            <button class="go ghost" data-act="all"><ha-icon icon="mdi:play"></ha-icon>${L.all}</button>
            </div>`
-        : `<div class="warn" style="text-align:left;padding:6px 0">Keine Raumdaten in <b>${this._cfg.rooms_entity}</b>.</div>`) +
+        : `<div class="warn" style="text-align:left;padding:6px 0">${L.no_rooms("<b>" + this._cfg.rooms_entity + "</b>")}</div>`) +
 
-      `<div class="sec"><ha-icon icon="mdi:fan"></ha-icon>Saugkraft</div><div class="segrow"><span class="pills">${fanPills}</span></div>` +
+      `<div class="sec"><ha-icon icon="mdi:fan"></ha-icon>${L.suction}</div><div class="segrow"><span class="pills">${fanPills}</span></div>` +
 
-      `<div class="sec"><ha-icon icon="phu:vac_mop"></ha-icon>Wischeinstellungen${mopActive ? " · aktiv" : ""}</div>` +
-      seg("Modus", this._cfg.mode_select, [{ v: "vacuum", l: "Saugen" }, { v: "vac_and_mop", l: "Saugen & Wischen" }, { v: "mop", l: "Wischen" }]) +
-      seg("Intensität", this._cfg.mop_intensity_select, [{ v: "off", l: "Aus" }, { v: "mild", l: "Leicht" }, { v: "standard", l: "Standard" }, { v: "intense", l: "Intensiv" }]) +
-      seg("Wisch-Modus", this._cfg.mop_mode_select, [{ v: "standard", l: "Standard" }, { v: "deep", l: "Deep" }, { v: "deep_plus", l: "Deep+" }, { v: "fast", l: "Schnell" }]) +
+      `<div class="sec"><ha-icon icon="phu:vac_mop"></ha-icon>${L.mop_settings}${mopActive ? " · " + L.active : ""}</div>` +
+      seg(L.mop_mode, this._cfg.mode_select, [{ v: "vacuum", l: L.mop_vac }, { v: "vac_and_mop", l: L.mop_vacmop }, { v: "mop", l: L.mop_mop }]) +
+      seg(L.mop_int, this._cfg.mop_intensity_select, [{ v: "off", l: L.int_off }, { v: "mild", l: L.int_mild }, { v: "standard", l: L.int_std }, { v: "intense", l: L.int_intense }]) +
+      seg(L.mop_wmode, this._cfg.mop_mode_select, [{ v: "standard", l: L.wm_std }, { v: "deep", l: L.wm_deep }, { v: "deep_plus", l: L.wm_deepplus }, { v: "fast", l: L.wm_fast }]) +
 
-      `<div class="sec"><ha-icon icon="mdi:robot-vacuum"></ha-icon>Reinigungsstatus</div>` +
-      statRow("mdi:clock-start", "Letzter Start", tstamp(this._st(this._cfg.last_start_sensor)), false, this._cfg.last_start_sensor) +
-      statRow("mdi:clock-end", "Letztes Ende", tstamp(this._st(this._cfg.last_end_sensor)), false, this._cfg.last_end_sensor) +
-      statRow("mdi:alert-circle-outline", "Sauger-Fehler", vacErr === "none" ? "Keiner" : vacErr, vacErr !== "none", this._cfg.vac_error_sensor) +
-      statRow("mdi:alert-circle-outline", "Dock-Fehler", dockErr === "ok" ? "OK" : dockErr, dockErr !== "ok", this._cfg.dock_error_sensor) +
+      `<div class="sec"><ha-icon icon="mdi:robot-vacuum"></ha-icon>${L.clean_status}</div>` +
+      statRow("mdi:clock-start", L.last_start, tstamp(this._st(this._cfg.last_start_sensor)), false, this._cfg.last_start_sensor) +
+      statRow("mdi:clock-end", L.last_end, tstamp(this._st(this._cfg.last_end_sensor)), false, this._cfg.last_end_sensor) +
+      statRow("mdi:alert-circle-outline", L.vac_err, vacErr === "none" ? L.none : vacErr, vacErr !== "none", this._cfg.vac_error_sensor) +
+      statRow("mdi:alert-circle-outline", L.dock_err, dockErr === "ok" ? "OK" : dockErr, dockErr !== "ok", this._cfg.dock_error_sensor) +
 
       `<div class="extra">
-        <button class="chip" data-act="script|${this._cfg.presence_script}"><ha-icon icon="mdi:robot-vacuum-alert"></ha-icon>Präsenzsensitiv saugen</button>
-        <button class="chip${pending ? " on" : ""}" data-act="toggle|${this._cfg.pending_boolean}"><ha-icon icon="mdi:calendar-check"></ha-icon>Heute fällig</button>
+        <button class="chip" data-act="script|${this._cfg.presence_script}"><ha-icon icon="mdi:robot-vacuum-alert"></ha-icon>${L.presence_clean}</button>
+        <button class="chip${pending ? " on" : ""}" data-act="toggle|${this._cfg.pending_boolean}"><ha-icon icon="mdi:calendar-check"></ha-icon>${L.due_today}</button>
         ${presHtml}
       </div>` +
       (foot.length ? `<div class="foot">${foot.map((x) => `<span>${x}</span>`).join("")}</div>` : "");
@@ -428,29 +529,35 @@ class RoborockS7Card extends HTMLElement {
 class RoborockS7CardEditor extends HTMLElement {
   setConfig(config) { this._config = config; this._render(); }
   set hass(hass) { this._hass = hass; this._render(); }
+  _L() {
+    const c = (this._config && this._config.language) || "auto";
+    if (c === "de" || c === "en") return I18N[c];
+    return (this._hass && this._hass.language || "").toLowerCase().startsWith("de") ? I18N.de : I18N.en;
+  }
   _render() {
     if (!this._hass || !this._config) return;
     if (!this._form) {
       this._form = document.createElement("ha-form");
-      this._form.computeLabel = (s) => ({
-        vacuum: "Staubsauger (vacuum)",
-        map_entity: "Karten-Bild (image)",
-        rooms_entity: "Raumdaten-Entität (image mit `rooms`-Attribut)",
-        title: "Titel (optional)",
-      }[s.name] || s.name);
       this._form.addEventListener("value-changed", (ev) => {
-        this.dispatchEvent(new CustomEvent("config-changed", {
-          detail: { config: ev.detail.value }, bubbles: true, composed: true,
-        }));
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: ev.detail.value }, bubbles: true, composed: true }));
       });
       this.appendChild(this._form);
     }
+    const L = this._L();
+    this._form.computeLabel = (s) => ({
+      vacuum: L.e_vacuum, map_entity: L.e_map, rooms_entity: L.e_rooms,
+      title: L.e_title, mode: L.e_mode, language: L.e_language,
+    }[s.name] || s.name);
     this._form.hass = this._hass;
     this._form.schema = [
-      { name: "vacuum", selector: { entity: { domain: "vacuum" } } },
-      { name: "map_entity", selector: { entity: { domain: "image" } } },
-      { name: "rooms_entity", selector: { entity: { domain: "image" } } },
       { name: "title", selector: { text: {} } },
+      { name: "mode", selector: { select: { mode: "dropdown", options: [
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+      { name: "language", selector: { select: { mode: "dropdown", options: [
+        { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
+      { name: "vacuum", selector: { entity: {} } },
+      { name: "map_entity", selector: { entity: {} } },
+      { name: "rooms_entity", selector: { entity: {} } },
     ];
     this._form.data = this._config;
   }

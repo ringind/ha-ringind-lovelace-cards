@@ -80,7 +80,74 @@ ha-card{padding:14px 14px 10px;overflow:hidden}
   :host(.collapsed) .stage{flex-direction:row;padding-top:6px;padding-bottom:6px}
 }
 @media(max-width:480px){.stage{flex-direction:column;text-align:center}.stage svg,.photo{width:62%}.bar{max-width:280px;margin-left:auto;margin-right:auto}}
+
+dialog.pop{border:none;margin:auto;padding:0;width:min(540px, calc(100vw - 32px));max-width:min(540px, calc(100vw - 32px));max-height:calc(100% - 72px);border-radius:var(--ha-dialog-border-radius,28px);color:var(--primary-text-color);background:var(--ha-dialog-surface-background,var(--mdc-theme-surface,var(--card-background-color,#fff)));box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);font-family:var(--mdc-typography-body1-font-family,inherit);font-size:1rem;overflow:hidden;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+dialog.pop[open]{display:flex;flex-direction:column}
+dialog.pop::backdrop{background:transparent}
+.pop-hd{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:20px 22px 6px;font-size:1.35rem;font-weight:600}
+.pop-hd .pt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop-x{flex:0 0 auto;border:none;background:none;cursor:pointer;color:var(--secondary-text-color);width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.pop-x:hover{background:var(--secondary-background-color,rgba(127,127,127,.15))}
+.pop-x ha-icon{--mdc-icon-size:24px}
+.pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 22px 22px}
+.pop-bd.more .panel{margin-top:6px}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
 `;
+
+const I18N = {
+  de: {
+    model: "9000 · Waschtrockner", disc: "Programm & Optionen", less: "Weniger", close: "Schließen",
+    connected: "Verbunden", disconnected: "Getrennt",
+    door_open: "Tür offen", off: "Aus", running: "Läuft", paused: "Pausiert",
+    delayed: "Startvorwahl", done: "Fertig", ready: "Bereit", unload: "Wäsche entnehmen",
+    p_prewash: "Vorwäsche", p_wash: "Hauptwäsche", p_rinse: "Spülen", p_spin: "Schleudern",
+    p_dry: "Trocknen", p_steam: "Dampf", p_crease: "Knitterschutz", p_washing: "Waschen",
+    done_at: (t) => "fertig um " + t, start_in: (t) => "Start in " + t,
+    approx: (t) => "ca. " + t, prog_len: "Programmdauer", enable_remote: "Fernstart am Gerät aktivieren",
+    sec_program: "Programm", sec_options: "Optionen", opt_hint: "· vom Programm gesetzt, am Gerät änderbar",
+    c_program: "Programm", c_temp: "Temp.", c_spin: "Schleudern", c_spin_unit: " U/min",
+    c_steam: "Dampf", c_steam_on: "an", c_drytarget: "Trockenziel", c_time: "Zeit", c_delay: "Startvorwahl",
+    o_prewash: "Vorwäsche", o_stain: "Flecken", o_eco: "Eco", o_night: "Nachtprogramm",
+    o_crease: "Knitterschutz", o_rinsehold: "Spülstopp", o_dry: "Trocknen", o_lock: "Kindersicherung",
+    o_extrarinse: "Extra-Spülen", o_off: "aus", o_on: "an",
+    cmd_on: "Einschalten", cmd_pause: "Pause", cmd_resume: "Fortsetzen", cmd_stop: "Stopp",
+    cmd_start: "Start", cmd_off: "Ausschalten",
+    f_load: (kg) => "Beladung ~" + kg + " kg", f_cycles: (n) => "Zyklen " + n,
+    f_wash: (n) => "Waschen " + n, f_dry: (n) => "Trocknen " + n, f_washdry: (n) => "Wasch-Trocknen " + n,
+    f_op: (h) => "Betrieb " + h + " h",
+    not_found: (p) => "Keine " + p + "*-Entitäten gefunden. Ist die AEG/Electrolux-Integration verbunden?",
+    unit_min: "Min", unit_h: "Std", now_done: "gleich fertig",
+    e_title: "Titel", e_prefix: "Entity-Präfix (Standard: aeg_waschtrockner)", e_image: "Bild-URL (optional)",
+    e_mode: "Anzeige", e_language: "Sprache", e_popup: "Popup", e_dropdown: "Ausklappen (Dropdown)",
+    e_auto: "Automatisch (HA)", e_de: "Deutsch", e_en: "Englisch",
+  },
+  en: {
+    model: "9000 · Washer-dryer", disc: "Programme & options", less: "Less", close: "Close",
+    connected: "Connected", disconnected: "Disconnected",
+    door_open: "Door open", off: "Off", running: "Running", paused: "Paused",
+    delayed: "Delay start", done: "Done", ready: "Ready", unload: "Remove laundry",
+    p_prewash: "Pre-wash", p_wash: "Main wash", p_rinse: "Rinse", p_spin: "Spin",
+    p_dry: "Dry", p_steam: "Steam", p_crease: "Anti-crease", p_washing: "Washing",
+    done_at: (t) => "done at " + t, start_in: (t) => "start in " + t,
+    approx: (t) => "approx. " + t, prog_len: "Programme length", enable_remote: "Enable remote start on the machine",
+    sec_program: "Programme", sec_options: "Options", opt_hint: "· set by the programme, change on the machine",
+    c_program: "Programme", c_temp: "Temp.", c_spin: "Spin", c_spin_unit: " rpm",
+    c_steam: "Steam", c_steam_on: "on", c_drytarget: "Dry target", c_time: "Time", c_delay: "Delay start",
+    o_prewash: "Pre-wash", o_stain: "Stain", o_eco: "Eco", o_night: "Night cycle",
+    o_crease: "Anti-crease", o_rinsehold: "Rinse hold", o_dry: "Dry", o_lock: "Child lock",
+    o_extrarinse: "Extra rinse", o_off: "off", o_on: "on",
+    cmd_on: "Power on", cmd_pause: "Pause", cmd_resume: "Resume", cmd_stop: "Stop",
+    cmd_start: "Start", cmd_off: "Power off",
+    f_load: (kg) => "Load ~" + kg + " kg", f_cycles: (n) => "Cycles " + n,
+    f_wash: (n) => "Wash " + n, f_dry: (n) => "Dry " + n, f_washdry: (n) => "Wash-dry " + n,
+    f_op: (h) => "Runtime " + h + " h",
+    not_found: (p) => "No " + p + "* entities found. Is the AEG/Electrolux integration connected?",
+    unit_min: "min", unit_h: "h", now_done: "almost done",
+    e_title: "Title", e_prefix: "Entity prefix (default: aeg_waschtrockner)", e_image: "Image URL (optional)",
+    e_mode: "Display", e_language: "Language", e_popup: "Popup", e_dropdown: "Inline dropdown",
+    e_auto: "Automatic (HA)", e_de: "German", e_en: "English",
+  },
+};
 
 const MACHINE_SVG = `
 <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AEG 9000 Waschtrockner">
@@ -147,12 +214,6 @@ function humLabel(v) {
     "Iron Dry": "Bügeltrocken", "Extra Dry": "Extratrocken", "Damp": "Nutzfeucht",
     "Hang Dry": "Leinentrocken" }[v]) || v;
 }
-function fmtMin(min) {
-  const m = Math.max(0, Math.round(min));
-  if (m === 0) return "gleich fertig";
-  if (m < 60) return m + " Min";
-  return Math.floor(m / 60) + " Std " + String(m % 60).padStart(2, "0") + " Min";
-}
 function clockPlus(min) {
   const d = new Date(Date.now() + Math.round(min) * 60000);
   return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
@@ -162,18 +223,40 @@ class AegWaschtrocknerCard extends HTMLElement {
   static getStubConfig() { return {}; }
   static getConfigElement() { return document.createElement("aeg-waschtrockner-card-editor"); }
   setConfig(c) {
-    this._cfg = Object.assign({ prefix: "aeg_waschtrockner" }, c || {});
+    const prevSig = this._psig;
+    this._cfg = Object.assign({ prefix: "aeg_waschtrockner", mode: "popup", language: "auto" }, c || {});
     this._p = this._cfg.prefix;
     this._runMax = 0;
     this._open = false;
+    this._popup = this._cfg.mode !== "dropdown";
+    this._psig = this._cfg.mode + "|" + this._cfg.language;
+    if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
+      this.shadowRoot.innerHTML = ""; this._sig = null;
+      this._build(); if (this._hass) this._render();
+    }
+  }
+
+  _lang() {
+    const c = this._cfg.language || "auto";
+    if (c === "de" || c === "en") return c;
+    return (this._hass && this._hass.language || "").toLowerCase().startsWith("de") ? "de" : "en";
+  }
+  _L() { return I18N[this._lang()] || I18N.de; }
+  _fmtMin(min) {
+    const L = this._L();
+    const m = Math.max(0, Math.round(min));
+    if (m === 0) return L.now_done;
+    if (m < 60) return m + " " + L.unit_min;
+    return Math.floor(m / 60) + " " + L.unit_h + " " + String(m % 60).padStart(2, "0") + " " + L.unit_min;
   }
 
   _toggle() {
+    if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
     this.$("disc").classList.toggle("open", this._open);
     this.classList.toggle("collapsed", !this._open);
-    this.$("discTxt").textContent = this._open ? "Weniger" : "Programm & Optionen";
+    this.$("discTxt").textContent = this._open ? this._L().less : this._L().disc;
   }
   getCardSize() { return 13; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
@@ -185,11 +268,13 @@ class AegWaschtrocknerCard extends HTMLElement {
   _mi(id) { this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: id }, bubbles: true, composed: true })); }
 
   _build() {
-    const r = this.attachShadow({ mode: "open" });
+    const r = this.shadowRoot || this.attachShadow({ mode: "open" });
+    const L = this._L();
+    const ttl = this._cfg.title || ("AEG " + L.model);
     r.innerHTML = `<style>${STYLE}</style>
 <ha-card>
  <div class="hdr">
-  <div class="ttl"><span class="brand">AEG</span><span class="model">9000 · Waschtrockner</span></div>
+  <div class="ttl"><span class="brand">AEG</span><span class="model">${this._cfg.title ? "" : L.model}</span></div>
   <div class="hstat"><span class="dot" id="dot"></span><span id="conn"></span><span class="alert" id="alert" hidden></span></div>
  </div>
  <div class="stage" id="stage">
@@ -203,14 +288,22 @@ class AegWaschtrocknerCard extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">Programm &amp; Optionen</span><ha-icon icon="mdi:chevron-down"></ha-icon></button>
- <div class="more" id="more" hidden><div class="panel" id="panel"></div></div>
-</ha-card>`;
+ <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="mdi:chevron-down"></ha-icon></button>
+ ${this._popup ? "" : `<div class="more" id="more" hidden><div class="panel" id="panel"></div></div>`}
+</ha-card>
+${this._popup ? `<dialog class="pop" id="pop">
+ <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
+ <div class="pop-bd more" id="more"><div class="panel" id="panel"></div></div>
+</dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
     this.classList.add("collapsed");
     this.$("stage").addEventListener("click", () => this._mi(this._id("sensor.appliancestate")));
     this.$("alert").addEventListener("click", (e) => { e.stopPropagation(); this._mi(this._id("sensor.alerts")); });
     this.$("disc").addEventListener("click", () => this._toggle());
+    if (this._popup) {
+      this.$("popX").onclick = () => this.$("pop").close();
+      this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
+    }
     const panelTap = (e) => {
       const b = e.target.closest("[data-tap]"); if (!b || b.hasAttribute("disabled")) return;
       const [k, id] = b.dataset.tap.split("|");
@@ -224,10 +317,11 @@ class AegWaschtrocknerCard extends HTMLElement {
 
   _render() {
     if (!this.shadowRoot) return;
+    const L = this._L();
+    if (this.$("popT")) this.$("popT").textContent = this._cfg.title || ("AEG " + L.model);
     if (!this._e("sensor.appliancestate")) {
-      this.$("panel").innerHTML = `<div class="warn">Keine <b>${this._p}*</b>-Entitäten gefunden.<br>Ist die AEG/Electrolux-Integration verbunden?</div>`;
-      this.$("more").hidden = false;
-      this.classList.remove("collapsed");
+      this.$("panel").innerHTML = `<div class="warn">${L.not_found("<b>" + this._p + "</b>")}</div>`;
+      if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
     // `set hass` fires on every state change in HA. Skip the re-render unless a value
@@ -269,19 +363,19 @@ class AegWaschtrocknerCard extends HTMLElement {
 
     // phase -> key/label/accent
     const P = [
-      [/prewash|pre-wash|soak/, "prewash", "Vorwäsche", "#60a5fa"],
-      [/mainwash|wash/, "wash", "Hauptwäsche", "#3b82f6"],
-      [/rins/, "rinse", "Spülen", "#06b6d4"],
-      [/spin|drain/, "spin", "Schleudern", "#6366f1"],
-      [/dry/, "dry", "Trocknen", "#f59e0b"],
-      [/steam/, "steam", "Dampf", "#a855f7"],
-      [/anticrease|crease/, "wash", "Knitterschutz", "#94a3b8"],
+      [/prewash|pre-wash|soak/, "prewash", L.p_prewash, "#60a5fa"],
+      [/mainwash|wash/, "wash", L.p_wash, "#3b82f6"],
+      [/rins/, "rinse", L.p_rinse, "#06b6d4"],
+      [/spin|drain/, "spin", L.p_spin, "#6366f1"],
+      [/dry/, "dry", L.p_dry, "#f59e0b"],
+      [/steam/, "steam", L.p_steam, "#a855f7"],
+      [/anticrease|crease/, "wash", L.p_crease, "#94a3b8"],
     ];
     let pk = "wash", phLabel = "", acc = "var(--primary-color)";
     if (running) {
       let hit = false;
       for (const [re, k, lab, col] of P) if (re.test(ph)) { pk = k; phLabel = lab; acc = col; hit = true; break; }
-      if (!hit) { pk = "wash"; phLabel = /not.?available|unavailable/i.test(phaseRaw) || !phaseRaw ? "Waschen" : phaseRaw; acc = "#3b82f6"; }
+      if (!hit) { pk = "wash"; phLabel = /not.?available|unavailable/i.test(phaseRaw) || !phaseRaw ? L.p_washing : phaseRaw; acc = "#3b82f6"; }
     } else if (done) acc = "#22c55e";
     else if (delayed) acc = "#f59e0b";
     else if (off) acc = "var(--disabled-text-color)";
@@ -294,22 +388,22 @@ class AegWaschtrocknerCard extends HTMLElement {
 
     // status text
     let big;
-    if (doorOpen && !running) big = "Tür offen";
-    else if (off) big = "Aus";
-    else if (running) big = "Läuft";
-    else if (paused) big = "Pausiert";
-    else if (delayed) big = "Startvorwahl";
-    else if (done) big = "Fertig";
-    else big = "Bereit";
+    if (doorOpen && !running) big = L.door_open;
+    else if (off) big = L.off;
+    else if (running) big = L.running;
+    else if (paused) big = L.paused;
+    else if (delayed) big = L.delayed;
+    else if (done) big = L.done;
+    else big = L.ready;
     this.$("big").textContent = big;
-    this.$("phase").textContent = running ? phLabel : (done ? "Wäsche entnehmen" : "");
+    this.$("phase").textContent = running ? phLabel : (done ? L.unload : "");
 
     let count = "", finish = "";
-    if (running && rem != null && rem > 0) { count = fmtMin(rem); finish = "fertig um " + clockPlus(rem); }
-    else if (delayed && delay > 0) { count = "Start in " + fmtMin(delay); }
-    else if (done) { count = "0 Min"; }
-    else if (!paused && rem != null && rem > 0) { count = "ca. " + fmtMin(rem); finish = "Programmdauer"; }
-    if (!running && !done && rcBlocked) finish = "Fernstart am Gerät aktivieren";
+    if (running && rem != null && rem > 0) { count = this._fmtMin(rem); finish = L.done_at(clockPlus(rem)); }
+    else if (delayed && delay > 0) { count = L.start_in(this._fmtMin(delay)); }
+    else if (done) { count = "0 " + L.unit_min; }
+    else if (!paused && rem != null && rem > 0) { count = L.approx(this._fmtMin(rem)); finish = L.prog_len; }
+    if (!running && !done && rcBlocked) finish = L.enable_remote;
     this.$("count").textContent = count;
     this.$("finish").textContent = finish;
 
@@ -327,7 +421,7 @@ class AegWaschtrocknerCard extends HTMLElement {
 
     // header
     this.$("dot").className = "dot" + (conn ? " ok" : "");
-    this.$("conn").textContent = conn ? "Verbunden" : "Getrennt";
+    this.$("conn").textContent = conn ? L.connected : L.disconnected;
     const al = this.$("alert");
     if (alerts && !["0", "off", "none", "unknown", "unavailable"].includes(alerts.toLowerCase())) {
       al.hidden = false; al.textContent = "⚠ " + alerts;
@@ -342,24 +436,24 @@ class AegWaschtrocknerCard extends HTMLElement {
 
     // program summary chips (tap = open more-info to change)
     const pc = [];
-    pc.push(chip("Programm", prettyProgram(this._st("select.userselections_programuid")),
+    pc.push(chip(L.c_program, prettyProgram(this._st("select.userselections_programuid")),
       "more|select." + P_ + "_userselections_programuid", false, "mdi:tune-vertical"));
-    const temp = (this._st("select.userselections_analogtemperature") || "").replace(" Celsius", "°").replace(/cold/i, "Kalt");
-    if (temp) pc.push(chip("Temp.", temp, "more|select." + P_ + "_userselections_analogtemperature", false, "mdi:thermometer"));
+    const temp = (this._st("select.userselections_analogtemperature") || "").replace(" Celsius", "°").replace(/cold/i, this._lang() === "de" ? "Kalt" : "Cold");
+    if (temp) pc.push(chip(L.c_temp, temp, "more|select." + P_ + "_userselections_analogtemperature", false, "mdi:thermometer"));
     const spin = (this._st("select.userselections_analogspinspeed") || "").replace(/\s*Rpm/i, "").trim();
-    if (spin) pc.push(chip("Schleudern", spin + (/\d/.test(spin) ? " U/min" : ""),
+    if (spin) pc.push(chip(L.c_spin, spin + (/\d/.test(spin) ? L.c_spin_unit : ""),
       "more|select." + P_ + "_userselections_analogspinspeed", false, "mdi:sync"));
     const steam = this._st("select.userselections_steamvalue");
-    if (steam && !/off/i.test(steam)) pc.push(chip("Dampf", steam.replace(/steam/i, "").trim() || "an",
+    if (steam && !/off/i.test(steam)) pc.push(chip(L.c_steam, steam.replace(/steam/i, "").trim() || L.c_steam_on,
       "more|select." + P_ + "_userselections_steamvalue", true, "mdi:weather-fog"));
     const dryOn = this._st("switch.userselections_drymode") === "on";
     const hum = this._st("select.userselections_humiditytarget");
-    if (dryOn && hum) pc.push(chip("Trockenziel", humLabel(hum),
+    if (dryOn && hum) pc.push(chip(L.c_drytarget, humLabel(hum),
       "more|select." + P_ + "_userselections_humiditytarget", false, "mdi:tumble-dryer"));
     const tm = this._st("select.userselections_timemanagerlevel");
-    if (tm && !/normal/i.test(tm)) pc.push(chip("Zeit", tm,
+    if (tm && !/normal/i.test(tm)) pc.push(chip(L.c_time, tm,
       "more|select." + P_ + "_userselections_timemanagerlevel", false, "mdi:timer-cog-outline"));
-    if (delay > 0) pc.push(chip("Startvorwahl", fmtMin(delay),
+    if (delay > 0) pc.push(chip(L.c_delay, this._fmtMin(delay),
       "more|number." + P_ + "_starttime", true, "mdi:clock-start"));
 
     // The *_userSelections_* switches only mirror the CHOSEN PROGRAM's options — the AEG
@@ -368,17 +462,17 @@ class AegWaschtrocknerCard extends HTMLElement {
     const opt = (label, suf, icon, writable) =>
       chip(label, null, (writable ? "tgl|" : "more|") + this._id(suf), this._st(suf) === "on", icon);
     const oc = [
-      opt("Vorwäsche", "switch.userselections_prewashphase", "mdi:water-plus-outline"),
-      opt("Flecken", "switch.userselections_stain", "mdi:liquid-spot"),
-      opt("Eco", "switch.userselections_wmeconomy", "mdi:leaf"),
-      opt("Nachtprogramm", "switch.userselections_nightcycle", "mdi:weather-night"),
-      opt("Knitterschutz", "switch.userselections_anticreasenosteam", "mdi:iron-outline"),
-      opt("Spülstopp", "switch.userselections_rinsehold", "mdi:pause-octagon-outline"),
-      opt("Trocknen", "switch.userselections_drymode", "mdi:tumble-dryer"),
-      opt("Kindersicherung", "switch.uilockmode", "mdi:lock", true),
+      opt(L.o_prewash, "switch.userselections_prewashphase", "mdi:water-plus-outline"),
+      opt(L.o_stain, "switch.userselections_stain", "mdi:liquid-spot"),
+      opt(L.o_eco, "switch.userselections_wmeconomy", "mdi:leaf"),
+      opt(L.o_night, "switch.userselections_nightcycle", "mdi:weather-night"),
+      opt(L.o_crease, "switch.userselections_anticreasenosteam", "mdi:iron-outline"),
+      opt(L.o_rinsehold, "switch.userselections_rinsehold", "mdi:pause-octagon-outline"),
+      opt(L.o_dry, "switch.userselections_drymode", "mdi:tumble-dryer"),
+      opt(L.o_lock, "switch.uilockmode", "mdi:lock", true),
     ];
     const xr = this._st("select.defaultextrarinse");
-    if (xr) oc.push(chip("Extra-Spülen", /off/i.test(xr) ? "aus" : (xr.replace(/extra rinse/i, "").trim() || "an"),
+    if (xr) oc.push(chip(L.o_extrarinse, /off/i.test(xr) ? L.o_off : (xr.replace(/extra rinse/i, "").trim() || L.o_on),
       "more|select." + P_ + "_defaultextrarinse", !/off/i.test(xr), "mdi:water-sync"));
 
     // context-aware command buttons
@@ -387,16 +481,16 @@ class AegWaschtrocknerCard extends HTMLElement {
       `<ha-icon icon="${icon}"></ha-icon>${label}</button>`;
     const cmds = [];
     if (off) {
-      cmds.push(B("Einschalten", "mdi:power", "press|button." + P_ + "_executecommand_8", true));
+      cmds.push(B(L.cmd_on, "mdi:power", "press|button." + P_ + "_executecommand_8", true));
     } else {
-      if (running) cmds.push(B("Pause", "mdi:pause", "press|button." + P_ + "_executecommand_9", true));
+      if (running) cmds.push(B(L.cmd_pause, "mdi:pause", "press|button." + P_ + "_executecommand_9", true));
       else if (paused) {
-        cmds.push(B("Fortsetzen", "mdi:play", "press|button." + P_ + "_executecommand_10", true));
-        cmds.push(B("Stopp", "mdi:stop", "press|button." + P_ + "_executecommand_12", false));
+        cmds.push(B(L.cmd_resume, "mdi:play", "press|button." + P_ + "_executecommand_10", true));
+        cmds.push(B(L.cmd_stop, "mdi:stop", "press|button." + P_ + "_executecommand_12", false));
       } else if (!done) {
-        cmds.push(B("Start", "mdi:play", "press|button." + P_ + "_executecommand_11", true, doorOpen || rcBlocked));
+        cmds.push(B(L.cmd_start, "mdi:play", "press|button." + P_ + "_executecommand_11", true, doorOpen || rcBlocked));
       }
-      cmds.push(B("Ausschalten", "mdi:power", "press|button." + P_ + "_executecommand_7", false));
+      cmds.push(B(L.cmd_off, "mdi:power", "press|button." + P_ + "_executecommand_7", false));
     }
 
     // lifetime footer
@@ -404,17 +498,17 @@ class AegWaschtrocknerCard extends HTMLElement {
     const wt = this._n("sensor.appliancetotalworkingtime");
     const load = this._n("sensor.measuredloadweight");
     const foot = [];
-    if (running && load != null && load < 60000) foot.push("Beladung ~" + (load / 1000).toFixed(1).replace(".", ",") + " kg");
-    foot.push("Zyklen " + f("totalcyclecounter"));
-    foot.push("Waschen " + f("totalwashcyclescount"));
-    foot.push("Trocknen " + f("totaldrycyclescount"));
-    foot.push("Wasch-Trocknen " + f("totalwashdrycyclescount"));
-    if (wt != null) foot.push("Betrieb " + Math.round(wt / 60) + " h");
+    if (running && load != null && load < 60000) foot.push(L.f_load((load / 1000).toFixed(1)));
+    foot.push(L.f_cycles(f("totalcyclecounter")));
+    foot.push(L.f_wash(f("totalwashcyclescount")));
+    foot.push(L.f_dry(f("totaldrycyclescount")));
+    foot.push(L.f_washdry(f("totalwashdrycyclescount")));
+    if (wt != null) foot.push(L.f_op(Math.round(wt / 60)));
 
     this.$("cmds").innerHTML = cmds.join("");
     this.$("panel").innerHTML =
-      `<div class="sec">Programm</div><div class="row">${pc.join("")}</div>` +
-      `<div class="sec">Optionen <span class="hint">· vom Programm gesetzt, am Gerät änderbar</span></div>` +
+      `<div class="sec">${L.sec_program}</div><div class="row">${pc.join("")}</div>` +
+      `<div class="sec">${L.sec_options} <span class="hint">${L.opt_hint}</span></div>` +
       `<div class="row">${oc.join("")}</div>` +
       `<div class="foot">${foot.map((x) => `<span>${x}</span>`).join("")}</div>`;
   }
@@ -424,25 +518,31 @@ class AegWaschtrocknerCard extends HTMLElement {
 class AegWaschtrocknerCardEditor extends HTMLElement {
   setConfig(config) { this._config = config; this._render(); }
   set hass(hass) { this._hass = hass; this._render(); }
+  _L() {
+    const c = (this._config && this._config.language) || "auto";
+    if (c === "de" || c === "en") return I18N[c];
+    return (this._hass && this._hass.language || "").toLowerCase().startsWith("de") ? I18N.de : I18N.en;
+  }
   _render() {
     if (!this._hass || !this._config) return;
     if (!this._form) {
       this._form = document.createElement("ha-form");
-      this._form.computeLabel = (s) => ({
-        title: "Titel (optional)",
-        prefix: "Entity-Präfix (Standard: aeg_waschtrockner)",
-        image: "Bild-URL – ersetzt die Illustration (optional)",
-      }[s.name] || s.name);
       this._form.addEventListener("value-changed", (e) => {
-        this.dispatchEvent(new CustomEvent("config-changed", {
-          detail: { config: e.detail.value }, bubbles: true, composed: true,
-        }));
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: e.detail.value }, bubbles: true, composed: true }));
       });
       this.appendChild(this._form);
     }
+    const L = this._L();
+    this._form.computeLabel = (s) => ({
+      title: L.e_title, prefix: L.e_prefix, image: L.e_image, mode: L.e_mode, language: L.e_language,
+    }[s.name] || s.name);
     this._form.hass = this._hass;
     this._form.schema = [
       { name: "title", selector: { text: {} } },
+      { name: "mode", selector: { select: { mode: "dropdown", options: [
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+      { name: "language", selector: { select: { mode: "dropdown", options: [
+        { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
       { name: "prefix", selector: { text: {} } },
       { name: "image", selector: { text: {} } },
     ];
