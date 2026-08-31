@@ -1876,20 +1876,24 @@ window.customCards.push({
 
 /* ===== star-projector-popup-card.js ===== */
 (() => {
-/* Smart Star Projector — popup variant
- * A copy of custom:star-projector-card, modified so that:
- *   - the "dropdown" controls open in a modal POPUP (native <dialog>) that scales
- *     and is styled like Home Assistant's more-info dialog: min(500px, 100vw-32px)
- *     with a 28px radius on desktop, full-screen with no radius below HA's own
- *     breakpoint (max-width:450px OR max-height:500px), the same scrim / surface
- *     tokens, and rem-based typography (title 1.574rem/400, body 1rem);
- *   - every entity is configured explicitly (no prefix / name wildcard) and each
+/* Smart Star Projector — popup / dropdown variant
+ * A copy of custom:star-projector-card. Differences:
+ *   - `mode` (graphical-editor choosable): "popup" (default) opens the controls in
+ *     a modal <dialog> that scales & is styled like Home Assistant's more-info
+ *     dialog; "dropdown" expands them inline under the header (like the base card).
+ *   - Popup mode: min(500px, 100vw-32px) with a 28px radius on desktop, full-screen
+ *     below HA's own breakpoint (max-width:450px OR max-height:500px), HA surface
+ *     tokens, rem-based typography (title 1.574rem/400, body 1rem). The modal
+ *     overlay opacity is configurable via `overlay_opacity` (0..100, default 100).
+ *   - Every entity is configured explicitly (no prefix / name wildcard) and each
  *     one is a selectable field in the graphical editor.
  * User-facing strings German; code comments English.
  *
  * config:
  *   type: custom:star-projector-popup-card
  *   title: "Sternenprojektor"
+ *   mode: popup            # "popup" (default) or "dropdown"
+ *   overlay_opacity: 100   # popup mode only; 0..100, opacity of the modal scrim (default 100)
  *   power:    switch.smart_star_projector_master
  *   nebula:   light.smart_star_projector_background
  *   stars:    light.smart_star_projector_laser
@@ -1906,9 +1910,13 @@ ha-card{padding:12px 14px}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--acc);color:#fff}
-.open-btn{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:2px;flex:0 0 auto;display:inline-flex}
-.open-btn ha-icon{--mdc-icon-size:20px}
-/* --- control rows: sized to Home Assistant's dialog text scale (rem, 16px base) --- */
+.toggle-btn{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:2px;flex:0 0 auto;display:inline-flex}
+.toggle-btn ha-icon{--mdc-icon-size:20px;transition:transform .25s}
+.toggle-btn.open ha-icon{transform:rotate(180deg)}
+.drop{padding-top:4px}
+.drop[hidden],#body[hidden]{display:none}
+
+/* --- control rows: sized to Home Assistant's dialog text scale (rem) --- */
 .row{display:flex;align-items:center;gap:12px;min-height:44px}
 .row+.row{margin-top:4px}
 .row .ic{--mdc-icon-size:22px;color:var(--secondary-text-color);width:36px;text-align:center;flex:0 0 auto}
@@ -1943,7 +1951,7 @@ dialog.pop{
 }
 dialog.pop[open]{display:flex;flex-direction:column}
 dialog.pop::backdrop{
-  background:var(--dialog-scrim-color, rgba(0,0,0,.32));
+  background:rgba(0, 0, 0, var(--spp-overlay-opacity, 1));
   -webkit-backdrop-filter:var(--dialog-backdrop-filter, none);
   backdrop-filter:var(--dialog-backdrop-filter, none);
 }
@@ -1981,60 +1989,8 @@ dialog.pop::backdrop{
 
 const TIMERS = [["00:00:00", "Aus"], ["00:15:00", "15m"], ["00:30:00", "30m"], ["01:00:00", "1 Std"], ["02:00:00", "2 Std"]];
 
-const DEFAULTS = {
-  title: "Sternenprojektor",
-  power: "switch.smart_star_projector_master",
-  nebula: "light.smart_star_projector_background",
-  stars: "light.smart_star_projector_laser",
-  rotation: "number.smart_star_projector_star_rotation_speed",
-  timer: "time.smart_star_projector_timer",
-};
-
-class StarProjectorPopupCard extends HTMLElement {
-  static getStubConfig() {
-    return {
-      power: DEFAULTS.power, nebula: DEFAULTS.nebula, stars: DEFAULTS.stars,
-      rotation: DEFAULTS.rotation, timer: DEFAULTS.timer,
-    };
-  }
-  static getConfigElement() { return document.createElement("star-projector-popup-card-editor"); }
-  setConfig(c) {
-    this._cfg = Object.assign({}, DEFAULTS, c || {});
-    this._drag = new Set();
-  }
-  getCardSize() { return 1; }
-  set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
-
-  _e(id) { return this._hass && this._hass.states[id]; }
-  _on(id) { const e = this._e(id); return !!e && e.state === "on"; }
-  _mi(id) { this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: id }, bubbles: true, composed: true })); }
-  _svc(dom, srv, data) { this._hass.callService(dom, srv, data); }
-  _dom(id) { return (id || "").split(".")[0]; }
-  _brPct(id) {
-    const e = this._e(id);
-    if (!e || e.state !== "on") return 0;
-    const b = e.attributes && e.attributes.brightness;
-    return b == null ? 100 : Math.max(1, Math.round((b / 255) * 100));
-  }
-
-  _build() {
-    const r = this.attachShadow({ mode: "open" });
-    r.innerHTML = `<style>${STYLE}</style>
-<ha-card>
- <div class="hd">
-  <ha-icon icon="mdi:creation"></ha-icon>
-  <span class="ttl" id="ttl">Sternenprojektor</span>
-  <button class="open-btn" id="openBtn" title="Einstellungen"><ha-icon icon="mdi:tune-variant"></ha-icon></button>
-  <button class="pwr" id="pwr" title="Ein/Aus"><ha-icon icon="mdi:power"></ha-icon></button>
- </div>
-</ha-card>
-<dialog class="pop" id="pop">
- <div class="pop-hd">
-  <ha-icon icon="mdi:creation"></ha-icon>
-  <span class="pop-ttl" id="popTtl">Sternenprojektor</span>
-  <button class="x" id="closeBtn" title="Schließen"><ha-icon icon="mdi:close"></ha-icon></button>
- </div>
- <div class="pop-bd" id="body">
+// the four control rows — identical markup whether shown in the popup or the dropdown
+const ROWS = `
   <div class="row">
    <button class="tg" id="bgTg" title="Nebel ein/aus"><ha-icon icon="mdi:blur"></ha-icon></button>
    <span class="lbl">Nebel</span>
@@ -2056,15 +2012,96 @@ class StarProjectorPopupCard extends HTMLElement {
    <ha-icon class="ic" icon="mdi:timer-outline"></ha-icon>
    <span class="lbl">Timer</span>
    <span class="chips" id="tmr"></span>
-  </div>
+  </div>`;
+
+const DEFAULTS = {
+  title: "Sternenprojektor",
+  mode: "popup", // "popup" | "dropdown"
+  overlay_opacity: 100, // 0..100 — popup scrim opacity; 100 = fully opaque
+  power: "switch.smart_star_projector_master",
+  nebula: "light.smart_star_projector_background",
+  stars: "light.smart_star_projector_laser",
+  rotation: "number.smart_star_projector_star_rotation_speed",
+  timer: "time.smart_star_projector_timer",
+};
+
+class StarProjectorPopupCard extends HTMLElement {
+  static getStubConfig() {
+    return {
+      mode: DEFAULTS.mode, power: DEFAULTS.power, nebula: DEFAULTS.nebula,
+      stars: DEFAULTS.stars, rotation: DEFAULTS.rotation, timer: DEFAULTS.timer,
+    };
+  }
+  static getConfigElement() { return document.createElement("star-projector-popup-card-editor"); }
+  setConfig(c) {
+    const prevMode = this._cfg && this._cfg.mode;
+    this._cfg = Object.assign({}, DEFAULTS, c || {});
+    this._popup = this._cfg.mode !== "dropdown";
+    this._drag = new Set();
+    this._open = false;
+    let o = Number(this._cfg.overlay_opacity);
+    if (isNaN(o)) o = 100;
+    this._overlayAlpha = Math.max(0, Math.min(100, o)) / 100;
+    if (this.shadowRoot) {
+      this.style.setProperty("--spp-overlay-opacity", String(this._overlayAlpha));
+      // structure differs between modes — rebuild if the mode changed on an existing card
+      if (prevMode !== undefined && prevMode !== this._cfg.mode) {
+        this.shadowRoot.innerHTML = "";
+        this._build();
+        if (this._hass) this._render();
+      }
+    }
+  }
+  getCardSize() { return 1; }
+  set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
+
+  _e(id) { return this._hass && this._hass.states[id]; }
+  _on(id) { const e = this._e(id); return !!e && e.state === "on"; }
+  _mi(id) { this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: id }, bubbles: true, composed: true })); }
+  _svc(dom, srv, data) { this._hass.callService(dom, srv, data); }
+  _dom(id) { return (id || "").split(".")[0]; }
+  _brPct(id) {
+    const e = this._e(id);
+    if (!e || e.state !== "on") return 0;
+    const b = e.attributes && e.attributes.brightness;
+    return b == null ? 100 : Math.max(1, Math.round((b / 255) * 100));
+  }
+
+  _toggle() {
+    if (this._popup) { this.$("pop").showModal(); return; }
+    this._open = !this._open;
+    this.$("body").hidden = !this._open;
+    this.$("toggleBtn").classList.toggle("open", this._open);
+  }
+
+  _build() {
+    const r = this.shadowRoot || this.attachShadow({ mode: "open" });
+    const popup = this._popup;
+    r.innerHTML = `<style>${STYLE}</style>
+<ha-card>
+ <div class="hd">
+  <ha-icon icon="mdi:creation"></ha-icon>
+  <span class="ttl" id="ttl">Sternenprojektor</span>
+  <button class="toggle-btn" id="toggleBtn" title="${popup ? "Einstellungen" : "Ein-/Ausklappen"}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  <button class="pwr" id="pwr" title="Ein/Aus"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
-</dialog>`;
+ ${popup ? "" : `<div class="drop" id="body" hidden>${ROWS}</div>`}
+</ha-card>
+${popup ? `<dialog class="pop" id="pop">
+ <div class="pop-hd">
+  <ha-icon icon="mdi:creation"></ha-icon>
+  <span class="pop-ttl" id="popTtl">Sternenprojektor</span>
+  <button class="x" id="closeBtn" title="Schließen"><ha-icon icon="mdi:close"></ha-icon></button>
+ </div>
+ <div class="pop-bd" id="body">${ROWS}</div>
+</dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
     const c = this._cfg;
-    this.$("openBtn").onclick = () => this.$("pop").showModal();
-    this.$("closeBtn").onclick = () => this.$("pop").close();
-    // click on the backdrop (the dialog element itself, outside its content) closes it
-    this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
+    this.$("toggleBtn").onclick = () => this._toggle();
+    if (popup) {
+      this.$("closeBtn").onclick = () => this.$("pop").close();
+      this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
+    }
     this.$("pwr").onclick = () => this._svc(this._dom(c.power), "toggle", { entity_id: c.power });
     this.$("bgTg").onclick = () => this._svc(this._dom(c.nebula), "toggle", { entity_id: c.nebula });
     this.$("lsTg").onclick = () => this._svc(this._dom(c.stars), "toggle", { entity_id: c.stars });
@@ -2087,13 +2124,15 @@ class StarProjectorPopupCard extends HTMLElement {
   _render() {
     if (!this.shadowRoot) return;
     const c = this._cfg;
+    this.style.setProperty("--spp-overlay-opacity", String(this._overlayAlpha));
     if (!this._e(c.power) && !this._e(c.nebula)) {
       this.$("body").innerHTML = `<div class="warn">Entitäten nicht gefunden – bitte im Karten-Editor auswählen.</div>`;
+      if (!this._popup) this.$("body").hidden = false;
       return;
     }
     const t = c.title || "Sternenprojektor";
     this.$("ttl").textContent = t;
-    this.$("popTtl").textContent = t;
+    if (this.$("popTtl")) this.$("popTtl").textContent = t;
     this.$("pwr").className = "pwr" + (this._on(c.power) ? " on" : "");
 
     const setTg = (tgId, slId, id) => {
@@ -2117,7 +2156,7 @@ class StarProjectorPopupCard extends HTMLElement {
   }
 }
 
-/* ---- visual editor: every entity is its own selectable field, no prefix ---- */
+/* ---- visual editor: mode picker + every entity its own selectable field ---- */
 class StarProjectorPopupCardEditor extends HTMLElement {
   setConfig(config) { this._config = config; this._render(); }
   set hass(hass) { this._hass = hass; this._render(); }
@@ -2127,6 +2166,8 @@ class StarProjectorPopupCardEditor extends HTMLElement {
       this._form = document.createElement("ha-form");
       this._form.computeLabel = (s) => ({
         title: "Titel",
+        mode: "Anzeige",
+        overlay_opacity: "Overlay-Deckkraft (%) – nur Popup",
         power: "Power-Schalter",
         nebula: "Nebel-Licht",
         stars: "Sterne / Laser-Licht",
@@ -2143,6 +2184,11 @@ class StarProjectorPopupCardEditor extends HTMLElement {
     this._form.hass = this._hass;
     this._form.schema = [
       { name: "title", selector: { text: {} } },
+      { name: "mode", selector: { select: { mode: "dropdown", options: [
+        { value: "popup", label: "Popup" },
+        { value: "dropdown", label: "Ausklappen (Dropdown)" },
+      ] } } },
+      { name: "overlay_opacity", selector: { number: { min: 0, max: 100, step: 5, mode: "slider", unit_of_measurement: "%" } } },
       { name: "power", selector: { entity: {} } },
       { name: "nebula", selector: { entity: {} } },
       { name: "stars", selector: { entity: {} } },
@@ -2158,8 +2204,8 @@ customElements.define("star-projector-popup-card", StarProjectorPopupCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "star-projector-popup-card",
-  name: "Sternenprojektor (Popup)",
-  description: "Sternenprojektor-Steuerung in einem Popup; jede Entität einzeln wählbar",
+  name: "Sternenprojektor (Popup / Dropdown)",
+  description: "Sternenprojektor-Steuerung als Popup oder Dropdown; jede Entität einzeln wählbar",
   preview: false,
 });
 })();
