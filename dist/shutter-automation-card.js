@@ -8,9 +8,9 @@
  *     auto-opening on/off switch, and the close/open shutter buttons. Tapping
  *     the header/expander reveals the rest: the "Schliessen, wenn" / "Öffnen,
  *     wenn" threshold workflow (live +/- steppers, no hardcoded min/max/step —
- *     read from each input_number) plus an info column with a self-drawn sun
- *     azimuth/elevation compass (with the configured thresholds drawn on it)
- *     and optional outdoor sensor/weather readouts.
+ *     read from each input_number, with the current live value shown alongside
+ *     each threshold) plus an info column embedding the same custom:horizon-card
+ *     the original subview used, and optional outdoor sensor/weather readouts.
  *   - `language`: "auto" (follows HA), "de" or "en".
  * Code comments English; user-facing strings German/English via localization/.
  *
@@ -29,7 +29,7 @@
  *   open_brightness:    input_number....
  *   close_script:       script....
  *   open_script:        script....
- *   sun_entity:          sun.sun                # optional — draws the compass
+ *   sun_entity:          sun.sun                # optional — shows the horizon-card + live az/el values
  *   brightness_sensor:  sensor....               # optional info readouts
  *   temperature_sensor: sensor....
  *   wind_sensor:        sensor....
@@ -60,10 +60,8 @@ const DE = { "shutter-automation-card": {
   lbl_temperature_sensor: "Außentemperatur",
   lbl_wind_sensor: "Windgeschwindigkeit",
   lbl_weather: "Wetter",
-  dir_n: "N",
-  dir_e: "O",
-  dir_s: "S",
-  dir_w: "W",
+  actual: "Aktuell",
+  horizon_missing: "Sonnenstands-Karte (horizon-card) nicht verfügbar.",
   cond_close_met: "Schließen-Bedingung aktuell erfüllt",
   cond_open_met: "Öffnen-Bedingung aktuell erfüllt",
   cond_none: "Keine Bedingung aktuell erfüllt",
@@ -120,10 +118,8 @@ const EN = { "shutter-automation-card": {
   lbl_temperature_sensor: "Outdoor temperature",
   lbl_wind_sensor: "Wind speed",
   lbl_weather: "Weather",
-  dir_n: "N",
-  dir_e: "E",
-  dir_s: "S",
-  dir_w: "W",
+  actual: "Currently",
+  horizon_missing: "Sun-position card (horizon-card) not available.",
   cond_close_met: "Close condition currently met",
   cond_open_met: "Open condition currently met",
   cond_none: "No condition currently met",
@@ -195,20 +191,21 @@ ha-card{padding:14px 14px 12px;overflow:hidden}
 .sec:first-child{margin-top:0}
 .sec ha-icon{--mdc-icon-size:15px}
 
-.st-row{display:flex;align-items:center;gap:8px;padding:7px 2px}
+.st-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:7px 2px}
 .st-row .lbl{flex:1;min-width:0;font-size:.875rem;color:var(--primary-text-color)}
 .stbtn{border:none;background:var(--divider-color);color:var(--primary-text-color);width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .stbtn ha-icon{--mdc-icon-size:16px}
 .stbtn:active{background:var(--acc);color:#fff}
 .stval{min-width:66px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;font-size:.8125rem;color:var(--secondary-text-color)}
+.st-live{flex:1 1 100%;text-align:right;font-size:.75rem;color:var(--secondary-text-color)}
+.st-live b{color:var(--primary-text-color);font-weight:700}
 
 .stat{display:flex;align-items:center;gap:8px;padding:8px 2px;font-size:12.5px;color:var(--primary-text-color);border-bottom:1px solid var(--divider-color);cursor:pointer}
 .stat ha-icon{--mdc-icon-size:16px;color:var(--secondary-text-color)}
 .stat b{margin-left:auto;font-weight:700;color:var(--secondary-text-color)}
 .stat:last-child{border-bottom:none}
 
-.compass{position:relative;width:100%;max-width:210px;margin:2px auto 8px}
-.compass svg{display:block;width:100%;height:auto}
+.compass{position:relative;width:100%;margin:2px 0 8px}
 .cond{display:flex;align-items:center;gap:7px;justify-content:center;font-size:11.5px;font-weight:700;color:var(--secondary-text-color);margin:0 auto 12px;text-align:center}
 .cond .dot{width:8px;height:8px;border-radius:50%;background:var(--disabled-text-color);flex:0 0 auto}
 .cond.close .dot{background:#f59e0b}
@@ -234,14 +231,14 @@ dialog.pop::backdrop{background:transparent}
 `;
 
 const STEP_CLOSE = [
-  ["close_azimuth", "lbl_azimuth_close", "mdi:sun-angle"],
-  ["close_temp", "lbl_temp_close", "mdi:thermometer-plus"],
-  ["close_brightness", "lbl_brightness_close", "mdi:brightness-6"],
+  ["close_azimuth", "lbl_azimuth_close", "mdi:sun-angle", "azimuth"],
+  ["close_temp", "lbl_temp_close", "mdi:thermometer-plus", "temperature_sensor"],
+  ["close_brightness", "lbl_brightness_close", "mdi:brightness-6", "brightness_sensor"],
 ];
 const STEP_OPEN = [
-  ["open_azimuth", "lbl_azimuth_open", "mdi:sun-angle"],
-  ["open_elevation", "lbl_elevation_open", "mdi:angle-acute"],
-  ["open_brightness", "lbl_brightness_open", "mdi:brightness-6"],
+  ["open_azimuth", "lbl_azimuth_open", "mdi:sun-angle", "azimuth"],
+  ["open_elevation", "lbl_elevation_open", "mdi:angle-acute", "elevation"],
+  ["open_brightness", "lbl_brightness_open", "mdi:brightness-6", "brightness_sensor"],
 ];
 
 class ShutterAutomationCard extends HTMLElement {
@@ -318,17 +315,36 @@ class ShutterAutomationCard extends HTMLElement {
     const on = this._e(id) && this._e(id).state === "on";
     return `<div class="swrow"><ha-icon class="ic" icon="${icon}"></ha-icon><span class="lbl">${this._t(labelKey)}</span><button class="sw${on ? " on" : ""}" data-toggle="${id}" aria-label="${this._t(labelKey)}"></button></div>`;
   }
-  _stepRow(key, labelKey, icon) {
+  // `liveSrc` names where the actual/current counterpart of this threshold comes
+  // from: "azimuth"/"elevation" read off the configured sun entity, or another
+  // config key (e.g. "temperature_sensor") whose entity's state is the live value.
+  _liveValue(liveSrc) {
+    if (liveSrc === "azimuth" || liveSrc === "elevation") {
+      const v = this._sunAttr(liveSrc);
+      return v == null ? null : { v, unit: "°" };
+    }
+    const id = this._cfg[liveSrc];
+    const e = this._e(id);
+    if (!e) return null;
+    const v = parseFloat(e.state);
+    if (isNaN(v)) return null;
+    return { v, unit: (e.attributes && e.attributes.unit_of_measurement) || "" };
+  }
+  _fmtNum(v, unit) { return (Number.isInteger(v) ? v : v.toFixed(1)) + (unit ? " " + unit : ""); }
+  _stepRow(key, labelKey, icon, liveSrc) {
     const id = this._cfg[key];
     const e = this._e(id);
     if (!e) return "";
     const unit = (e.attributes && e.attributes.unit_of_measurement) || "";
     const v = parseFloat(e.state);
-    const disp = isNaN(v) ? "–" : (Number.isInteger(v) ? v : v.toFixed(1)) + (unit ? " " + unit : "");
+    const disp = isNaN(v) ? "–" : this._fmtNum(v, unit);
+    const live = liveSrc ? this._liveValue(liveSrc) : null;
     return `<div class="st-row"><ha-icon icon="${icon}"></ha-icon><span class="lbl">${this._t(labelKey)}</span>` +
       `<button class="stbtn" data-adj="${id}|-1"><ha-icon icon="mdi:minus"></ha-icon></button>` +
       `<span class="stval">${disp}</span>` +
-      `<button class="stbtn" data-adj="${id}|1"><ha-icon icon="mdi:plus"></ha-icon></button></div>`;
+      `<button class="stbtn" data-adj="${id}|1"><ha-icon icon="mdi:plus"></ha-icon></button>` +
+      (live ? `<span class="st-live">${this._t("actual")}: <b>${this._fmtNum(live.v, live.unit)}</b></span>` : "") +
+      `</div>`;
   }
   _statRow(id, labelKey, icon, formatter) {
     const e = this._e(id);
@@ -337,49 +353,23 @@ class ShutterAutomationCard extends HTMLElement {
     return `<div class="stat" data-mi="${id}"><ha-icon icon="${icon}"></ha-icon>${this._t(labelKey)}<b>${val}</b></div>`;
   }
 
-  // Self-drawn azimuth/elevation compass — draws the configured close/open
-  // azimuth thresholds and the open-elevation ring alongside the live sun
-  // position, so the info column visually explains the Konfiguration column.
-  _compassSVG(az, el) {
-    const cx = 100, cy = 100, R = 88;
-    const pt = (r, a) => { const rad = (a * Math.PI) / 180; return [cx + r * Math.sin(rad), cy - r * Math.cos(rad)]; };
-    const c = this._cfg;
-    const closeAz = c.close_azimuth ? this._num(c.close_azimuth) : null;
-    const openAz = c.open_azimuth ? this._num(c.open_azimuth) : null;
-    const openEl = c.open_elevation ? this._num(c.open_elevation) : null;
-    let s = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">`;
-    s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--divider-color)" stroke-width="1.5"/>`;
-    [30, 60].forEach((e2) => {
-      const r = R * (1 - e2 / 90);
-      s += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="var(--divider-color)" stroke-width="1" stroke-dasharray="2 4" opacity="0.6"/>`;
-    });
-    const DIRS = [[0, this._t("dir_n")], [90, this._t("dir_e")], [180, this._t("dir_s")], [270, this._t("dir_w")]];
-    DIRS.forEach(([a, label]) => {
-      const [x, y] = pt(R + 11, a);
-      s += `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--secondary-text-color)">${label}</text>`;
-    });
-    if (openEl != null) {
-      const r = R * (1 - Math.max(0, Math.min(90, openEl)) / 90);
-      s += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.85"/>`;
+  // The info column reuses the same custom:horizon-card the original subview used
+  // (rather than a self-drawn compass) so azimuth/elevation and the cardinal
+  // labels render exactly as HA's own N/E/S/W-aware card lays them out. It's a
+  // live DOM element, not an HTML string — mounted separately in _render() so a
+  // cols.innerHTML replacement doesn't tear it down on every unrelated update.
+  _mountHorizonCard() {
+    const wrap = this.$("sunViz");
+    if (!wrap) return;
+    if (!customElements.get("horizon-card")) {
+      wrap.innerHTML = `<div class="warn">${this._t("horizon_missing")}</div>`;
+      return;
     }
-    if (closeAz != null) {
-      const [x, y] = pt(R, closeAz);
-      s += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>`;
-    }
-    if (openAz != null) {
-      const [x, y] = pt(R, openAz);
-      s += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>`;
-    }
-    if (az != null && el != null) {
-      const r = R * (1 - Math.max(0, Math.min(90, el)) / 90);
-      const [x, y] = pt(r, az);
-      const day = el > 0;
-      s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="${day ? "var(--acc)" : "var(--disabled-text-color)"}"${day ? ' style="filter:drop-shadow(0 0 6px var(--acc))"' : ""}/>`;
-      s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="none" stroke="var(--card-background-color)" stroke-width="2"/>`;
-    }
-    s += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--secondary-text-color)"/>`;
-    s += "</svg>";
-    return s;
+    wrap.innerHTML = "";
+    const hc = document.createElement("horizon-card");
+    try { hc.setConfig({ title: null, fields: { azimuth: true, elevation: true } }); } catch (_e) { /* ignore */ }
+    hc.hass = this._hass;
+    wrap.appendChild(hc);
   }
 
   _condition() {
@@ -473,14 +463,13 @@ ${popup ? `<dialog class="pop" id="pop">
   _colsHTML() {
     const c = this._cfg;
     let left = "";
-    const closeRows = STEP_CLOSE.map(([k, l, i]) => this._stepRow(k, l, i)).filter(Boolean).join("");
+    const closeRows = STEP_CLOSE.map(([k, l, i, s]) => this._stepRow(k, l, i, s)).filter(Boolean).join("");
     if (closeRows) left += `<div class="sec"><ha-icon icon="mdi:close"></ha-icon>${this._t("h_close")}</div>${closeRows}`;
-    const openRows = STEP_OPEN.map(([k, l, i]) => this._stepRow(k, l, i)).filter(Boolean).join("");
+    const openRows = STEP_OPEN.map(([k, l, i, s]) => this._stepRow(k, l, i, s)).filter(Boolean).join("");
     if (openRows) left += `<div class="sec"><ha-icon icon="mdi:blinds-open"></ha-icon>${this._t("h_open")}</div>${openRows}`;
 
     let right = "";
     const hasSun = !!(c.sun_entity && this._e(c.sun_entity));
-    const az = this._sunAttr("azimuth"), el = this._sunAttr("elevation");
     const statRows = [
       this._statRow(c.brightness_sensor, "lbl_brightness_sensor", "mdi:brightness-6"),
       this._statRow(c.temperature_sensor, "lbl_temperature_sensor", "mdi:thermometer"),
@@ -490,7 +479,7 @@ ${popup ? `<dialog class="pop" id="pop">
     ].filter(Boolean).join("");
     if (hasSun || statRows) {
       right += `<div class="sec"><ha-icon icon="mdi:weather-sunny"></ha-icon>${this._t("h_info")}</div>`;
-      if (hasSun) { right += `<div class="compass">${this._compassSVG(az, el)}</div>`; right += this._condHTML(); }
+      if (hasSun) { right += `<div class="compass" id="sunViz"></div>`; right += this._condHTML(); }
       right += statRows;
     }
 
@@ -516,7 +505,7 @@ ${popup ? `<dialog class="pop" id="pop">
     this.style.setProperty("--acc", auto && auto.state !== "on" ? "var(--disabled-text-color)" : "var(--primary-color)");
 
     this._renderMainRow();
-    if (this.$("cols")) this.$("cols").innerHTML = this._colsHTML();
+    if (this.$("cols")) { this.$("cols").innerHTML = this._colsHTML(); this._mountHorizonCard(); }
   }
 }
 
