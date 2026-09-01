@@ -45,6 +45,9 @@ const DE = { "shutter-automation-card": {
   less: "Weniger",
   automation_active: "Automatisierung aktiv",
   opening_active: "Rolladen öffnen aktiv",
+  automation_executed: "Automatikbeschattung ausgeführt",
+  yes: "Ja",
+  no: "Nein",
   close_action: "Schliesse Rolläden",
   open_action: "Öffne Rolläden",
   h_close: "Schliessen, wenn",
@@ -82,6 +85,7 @@ const DE = { "shutter-automation-card": {
   e_grp_info: "Info-Anzeige (optional)",
   e_automation_active: "Automatisierung aktiv (input_boolean)",
   e_opening_active: "Rolladen öffnen aktiv (input_boolean)",
+  e_automation_executed: "Automatikbeschattung ausgeführt (input_boolean)",
   e_close_azimuth: "Azimut-Schwelle Schliessen (input_number)",
   e_close_temp: "Temperatur-Schwelle Schliessen (input_number)",
   e_close_brightness: "Helligkeits-Schwelle Schliessen (input_number)",
@@ -103,6 +107,9 @@ const EN = { "shutter-automation-card": {
   less: "Less",
   automation_active: "Automation active",
   opening_active: "Auto-opening active",
+  automation_executed: "Automatic shading executed",
+  yes: "Yes",
+  no: "No",
   close_action: "Close shutters",
   open_action: "Open shutters",
   h_close: "Close when",
@@ -140,6 +147,7 @@ const EN = { "shutter-automation-card": {
   e_grp_info: "Info display (optional)",
   e_automation_active: "Automation active (input_boolean)",
   e_opening_active: "Auto-opening active (input_boolean)",
+  e_automation_executed: "Automatic shading executed (input_boolean)",
   e_close_azimuth: "Azimuth threshold, close (input_number)",
   e_close_temp: "Temperature threshold, close (input_number)",
   e_close_brightness: "Brightness threshold, close (input_number)",
@@ -204,6 +212,8 @@ ha-card{padding:14px 14px 12px;overflow:hidden}
 .stat ha-icon{--mdc-icon-size:16px;color:var(--secondary-text-color)}
 .stat b{margin-left:auto;font-weight:700;color:var(--secondary-text-color)}
 .stat:last-child{border-bottom:none}
+.mainrow .stat{border-bottom:none;padding:6px 2px 2px}
+.stat.exec.on ha-icon,.stat.exec.on b{color:#22c55e}
 
 .compass{position:relative;width:100%;margin:2px 0 8px}
 .cond{display:flex;align-items:center;gap:7px;justify-content:center;font-size:11.5px;font-weight:700;color:var(--secondary-text-color);margin:0 auto 12px;text-align:center}
@@ -449,10 +459,25 @@ ${popup ? `<dialog class="pop" id="pop">
     }
   }
 
+  // Read-only status row for the "was the automation already executed today"
+  // flag — always visible in the mainrow (not tucked behind dropdown/popup),
+  // per the user's explicit ask. Tap opens more-info; not a toggle, since the
+  // entity is automation-driven rather than something the user sets by hand.
+  _execRow(id) {
+    if (!id) return "";
+    const e = this._e(id);
+    if (!e) return "";
+    const on = e.state === "on";
+    return `<div class="stat exec${on ? " on" : ""}" data-mi="${id}">` +
+      `<ha-icon icon="${on ? "mdi:check-circle" : "mdi:circle-outline"}"></ha-icon>${this._t("automation_executed")}` +
+      `<b>${on ? this._t("yes") : this._t("no")}</b></div>`;
+  }
+
   _renderMainRow() {
     const c = this._cfg;
     let html = this._swRow(c.automation_active, "automation_active", "mdi:window-shutter-auto") +
-      this._swRow(c.opening_active, "opening_active", "mdi:window-shutter-auto");
+      this._swRow(c.opening_active, "opening_active", "mdi:window-shutter-auto") +
+      this._execRow(c.automation_executed);
     const btns = [];
     if (c.close_script) btns.push(`<button class="cmd" data-script="${c.close_script}"><ha-icon icon="mdi:window-shutter"></ha-icon>${this._t("close_action")}</button>`);
     if (c.open_script) btns.push(`<button class="cmd" data-script="${c.open_script}"><ha-icon icon="mdi:window-shutter-open"></ha-icon>${this._t("open_action")}</button>`);
@@ -494,9 +519,9 @@ ${popup ? `<dialog class="pop" id="pop">
     if (this.$("ttl")) this.$("ttl").textContent = ttl;
     if (this.$("popTtl")) this.$("popTtl").textContent = ttl;
 
-    const KEYS = ["automation_active", "opening_active", "close_azimuth", "close_temp", "close_brightness",
-      "open_azimuth", "open_elevation", "open_brightness", "close_script", "open_script", "sun_entity",
-      "brightness_sensor", "temperature_sensor", "wind_sensor", "weather_entity"];
+    const KEYS = ["automation_active", "opening_active", "automation_executed", "close_azimuth", "close_temp",
+      "close_brightness", "open_azimuth", "open_elevation", "open_brightness", "close_script", "open_script",
+      "sun_entity", "brightness_sensor", "temperature_sensor", "wind_sensor", "weather_entity"];
     const sig = KEYS.map((k) => { const e = this._e(c[k]); return e ? e.last_updated : ""; }).join("#");
     if (sig === this._sig) return;
     this._sig = sig;
@@ -532,6 +557,7 @@ class ShutterAutomationCardEditor extends HTMLElement {
     this._form.computeLabel = (s) => ({
       title: L.e_title, mode: L.e_mode, language: L.e_language,
       automation_active: L.e_automation_active, opening_active: L.e_opening_active,
+      automation_executed: L.e_automation_executed,
       close_azimuth: L.e_close_azimuth, close_temp: L.e_close_temp, close_brightness: L.e_close_brightness,
       open_azimuth: L.e_open_azimuth, open_elevation: L.e_open_elevation, open_brightness: L.e_open_brightness,
       close_script: L.e_close_script, open_script: L.e_open_script,
@@ -550,6 +576,7 @@ class ShutterAutomationCardEditor extends HTMLElement {
       { name: "", type: "expandable", flatten: true, title: L.e_grp_status, icon: "mdi:toggle-switch", schema: [
         { name: "automation_active", selector: { entity: { domain: "input_boolean" } } },
         { name: "opening_active", selector: { entity: { domain: "input_boolean" } } },
+        { name: "automation_executed", selector: { entity: { domain: "input_boolean" } } },
       ] },
       { name: "", type: "expandable", flatten: true, title: L.e_grp_close, icon: "mdi:window-shutter", schema: [
         { name: "close_azimuth", selector: { entity: { domain: "input_number" } } },
