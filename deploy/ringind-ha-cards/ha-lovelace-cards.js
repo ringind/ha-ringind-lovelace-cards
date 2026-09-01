@@ -99,7 +99,7 @@ dialog.pop::backdrop{background:transparent}
 .pop-x ha-icon{--mdc-icon-size:24px}
 .pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 22px 22px}
 .pop-bd.more .panel{margin-top:6px}
-@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}.pop-hd{padding-top:max(20px, env(safe-area-inset-top))}}
 `;
 
 // User-facing strings live in localization/{de,en}.js (one entry per card type).
@@ -836,7 +836,7 @@ dialog.pop::backdrop{background:transparent}
 .pop-x:hover{background:var(--secondary-background-color,rgba(127,127,127,.15))}
 .pop-x ha-icon{--mdc-icon-size:24px}
 .pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:4px 22px 22px}
-@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}.pop-hd{padding-top:max(20px, env(safe-area-inset-top))}}
 `;
 
 const MACHINE_SVG = `
@@ -1194,7 +1194,7 @@ dialog.pop::backdrop{background:transparent}
 .pop-x ha-icon{--mdc-icon-size:24px}
 .pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 22px 22px}
 .pop-bd.more .sec:first-child{margin-top:6px}
-@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}.pop-hd{padding-top:max(20px, env(safe-area-inset-top))}}
 `;
 
 // User-facing strings live in localization/{de,en}.js (one entry per card type).
@@ -1813,7 +1813,7 @@ dialog.pop::backdrop{background:transparent}
 .pop-x ha-icon{--mdc-icon-size:24px}
 .pop-bd.more{display:block;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 22px 22px}
 .pop-bd.more .sec:first-child{margin-top:6px}
-@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}}
+@media(max-width:480px){dialog.pop{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}.pop-hd{padding-top:max(20px, env(safe-area-inset-top))}}
 `;
 
 const STATUS = {
