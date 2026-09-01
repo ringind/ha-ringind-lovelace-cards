@@ -1,7 +1,8 @@
 /* Smart Star Projector card (custom:star-projector-card)
  *   - `mode` (graphical-editor choosable): "popup" (default) opens the controls in
  *     a modal <dialog> that scales & is styled like Home Assistant's more-info
- *     dialog; "dropdown" expands them inline under the header.
+ *     dialog; "dropdown" expands them inline under the header on tap; "inline"
+ *     shows them in the card permanently (no toggle button).
  *   - The overlay behind the popup is always transparent (the dashboard stays
  *     fully visible). A light blur keeps the (opaque) popup crisp.
  *   - `language`: "auto" (follows HA), "de" or "en".
@@ -11,7 +12,7 @@
  * config:
  *   type: custom:star-projector-card
  *   title: "Sternenprojektor"     # optional; falls back to a translated default
- *   mode: popup                   # "popup" (default) or "dropdown"
+ *   mode: popup                   # "popup" (default) | "dropdown" | "inline"
  *   language: auto                # "auto" | "de" | "en"
  *   power:    switch.smart_star_projector_master
  *   nebula:   light.smart_star_projector_background
@@ -32,6 +33,7 @@ ha-card{padding:12px 14px}
 .hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
+:host(.inline) .hd{cursor:default}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--acc);color:#fff}
@@ -118,7 +120,8 @@ class StarProjectorCard extends HTMLElement {
   setConfig(c) {
     const prev = this._cfg && this._cfg.mode + "|" + this._cfg.language;
     this._cfg = Object.assign({}, DEFAULTS, c || {});
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._drag = new Set();
     this._open = false;
     if (this.shadowRoot && prev !== undefined && prev !== this._cfg.mode + "|" + this._cfg.language) {
@@ -188,6 +191,7 @@ class StarProjectorCard extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
@@ -218,10 +222,10 @@ class StarProjectorCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:creation"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
- ${popup ? "" : `<div class="drop" id="body" hidden>${this._rows()}</div>`}
+ ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
 </ha-card>
 ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd">
@@ -233,13 +237,16 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-bd" id="body">${this._rows()}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
+    this.classList.toggle("inline", this._inline);
     const c = this._cfg;
-    // Open/close from the whole header — leading icon, title and the tune/chevron
-    // icon; the power button keeps its own handler.
-    this.$("hd").addEventListener("click", (e) => {
-      if (e.target.closest("#pwr")) return;
-      this._toggle();
-    });
+    if (!this._inline) {
+      // Open/close from the whole header — leading icon, title and the tune/chevron
+      // icon; the power button keeps its own handler.
+      this.$("hd").addEventListener("click", (e) => {
+        if (e.target.closest("#pwr")) return;
+        this._toggle();
+      });
+    }
     const togglePower = () => this._svc(this._dom(c.power), "toggle", { entity_id: c.power });
     if (popup) {
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -334,6 +341,7 @@ class StarProjectorCardEditor extends HTMLElement {
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
         { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline },
       ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en },
@@ -354,6 +362,6 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "star-projector-card",
   name: "Star Projector",
-  description: "Smart star projector — popup or dropdown; every entity selectable; DE/EN.",
+  description: "Smart star projector — popup, dropdown or inline; every entity selectable; DE/EN.",
   preview: false,
 });

@@ -10,6 +10,7 @@
  *   map_entity: image.roborock_s7_maxv_map_0_custom     # image shown as the map
  *   rooms_entity: image.roborock_s7_maxv_map_0_custom   # entity whose `rooms` attr lists segments
  *   title: "Roborock S7 MaxV"
+ *   mode: popup                                        # "popup" (default) | "dropdown" | "inline"
  * All other entity ids have sensible defaults (see setConfig) and can be overridden in YAML.
  */
 
@@ -188,6 +189,7 @@ const DE = { "roborock-s7-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch"
@@ -249,7 +251,8 @@ const EN = { "roborock-s7-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English"
@@ -320,7 +323,8 @@ class RoborockS7Card extends HTMLElement {
     this._cfg = Object.assign(d, c || {});
     this._sel = new Set();
     this._open = false;
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._psig = this._cfg.mode + "|" + this._cfg.language;
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
       this.shadowRoot.innerHTML = ""; this._sig = null;
@@ -338,6 +342,7 @@ class RoborockS7Card extends HTMLElement {
   _status(raw) { const m = STATUS[this._lang()] || STATUS.de; return m[raw] || (raw ? raw.replace(/_/g, " ") : "–"); }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
@@ -404,16 +409,16 @@ class RoborockS7Card extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
- ${this._popup ? "" : `<div class="more" id="more" hidden><div id="body"></div></div>`}
+ ${this._inline ? "" : `<button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
+ ${this._popup ? "" : `<div class="more" id="more"${this._inline ? "" : " hidden"}><div id="body"></div></div>`}
 </ha-card>
 ${this._popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
  <div class="pop-bd more" id="more"><div id="body"></div></div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
-    this.classList.add("collapsed");
-    this.$("disc").addEventListener("click", () => this._toggle());
+    if (!this._inline) this.classList.add("collapsed");
+    if (!this._inline) this.$("disc").addEventListener("click", () => this._toggle());
     if (this._popup) {
       this.$("popX").onclick = () => this.$("pop").close();
       this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
@@ -635,7 +640,8 @@ class RoborockS7CardEditor extends HTMLElement {
     this._form.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
-        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline } ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
       { name: "vacuum", selector: { entity: {} } },

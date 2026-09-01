@@ -12,6 +12,7 @@
  * config:
  *   type: custom:aeg-waschtrockner-card
  *   prefix: aeg_waschtrockner   # entity_id prefix (default)
+ *   mode: popup                 # "popup" (default) | "dropdown" | "inline"
  *   image: /local/aeg9000.png   # optional real photo, replaces the SVG illustration
  */
 
@@ -177,6 +178,7 @@ const DE = { "aeg-waschtrockner-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch"
@@ -254,7 +256,8 @@ const EN = { "aeg-waschtrockner-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English"
@@ -340,7 +343,8 @@ class AegWaschtrocknerCard extends HTMLElement {
     this._p = this._cfg.prefix;
     this._runMax = 0;
     this._open = false;
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._psig = this._cfg.mode + "|" + this._cfg.language;
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
       this.shadowRoot.innerHTML = ""; this._sig = null;
@@ -363,6 +367,7 @@ class AegWaschtrocknerCard extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
@@ -400,18 +405,18 @@ class AegWaschtrocknerCard extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
- ${this._popup ? "" : `<div class="more" id="more" hidden><div class="panel" id="panel"></div></div>`}
+ ${this._inline ? "" : `<button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
+ ${this._popup ? "" : `<div class="more" id="more"${this._inline ? "" : " hidden"}><div class="panel" id="panel"></div></div>`}
 </ha-card>
 ${this._popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
  <div class="pop-bd more" id="more"><div class="panel" id="panel"></div></div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
-    this.classList.add("collapsed");
+    if (!this._inline) this.classList.add("collapsed");
     this.$("stage").addEventListener("click", () => this._mi(this._id("sensor.appliancestate")));
     this.$("alert").addEventListener("click", (e) => { e.stopPropagation(); this._mi(this._id("sensor.alerts")); });
-    this.$("disc").addEventListener("click", () => this._toggle());
+    if (!this._inline) this.$("disc").addEventListener("click", () => this._toggle());
     if (this._popup) {
       this.$("popX").onclick = () => this.$("pop").close();
       this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
@@ -652,7 +657,8 @@ class AegWaschtrocknerCardEditor extends HTMLElement {
     this._form.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
-        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline } ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
       { name: "prefix", selector: { text: {} } },
@@ -675,12 +681,13 @@ window.customCards.push({
 
 /* ===== bosch-dishwasher-card.js ===== */
 (() => {
-/* Bosch "Super Silence" dishwasher card (popup / dropdown, DE/EN)
+/* Bosch "Super Silence" dishwasher card (popup / dropdown / inline, DE/EN)
  * Non-smart machine: driven by a single input_boolean. Elapsed time from its
  * last_changed; remaining time estimated from a configurable cycle length.
  *
  * Collapsed = illustration + the single "started / done" button. The disc button
- * reveals the footer details, inline (dropdown) or in a modal popup (`mode`).
+ * reveals the footer details in a dropdown or a modal popup (`mode`); `mode:
+ * inline` shows them in the card permanently (no disc button).
  *
  * config:
  *   type: custom:bosch-dishwasher-card
@@ -688,7 +695,7 @@ window.customCards.push({
  *   cycle_minutes: 195
  *   title: "Bosch Super Silence"      # optional
  *   image: /local/bosch_dishwasher.png
- *   mode: popup                       # "popup" (default) | "dropdown"
+ *   mode: popup                       # "popup" (default) | "dropdown" | "inline"
  *   language: auto                    # "auto" | "de" | "en"
  */
 
@@ -729,6 +736,7 @@ const DE = { "bosch-dishwasher-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch"
@@ -767,7 +775,8 @@ const EN = { "bosch-dishwasher-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English"
@@ -868,7 +877,8 @@ class BoschDishwasherCard extends HTMLElement {
       c || {}
     );
     this._cycle = Math.max(10, Number(this._cfg.cycle_minutes) || 195);
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._open = false;
     this._sig = this._cfg.mode + "|" + this._cfg.language;
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._sig) {
@@ -914,6 +924,7 @@ class BoschDishwasherCard extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
@@ -944,17 +955,17 @@ class BoschDishwasherCard extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">${L.details}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
- ${this._popup ? "" : `<div class="more" id="more" hidden>${inner}</div>`}
+ ${this._inline ? "" : `<button class="disc" id="disc" type="button"><span id="discTxt">${L.details}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
+ ${this._popup ? "" : `<div class="more" id="more"${this._inline ? "" : " hidden"}>${inner}</div>`}
 </ha-card>
 ${this._popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
  <div class="pop-bd more" id="more">${inner}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
-    this.classList.add("collapsed");
+    if (!this._inline) this.classList.add("collapsed");
     this.$("stage").addEventListener("click", () => this._mi(this._cfg.entity));
-    this.$("disc").addEventListener("click", () => this._toggle());
+    if (!this._inline) this.$("disc").addEventListener("click", () => this._toggle());
     if (this._popup) {
       this.$("popX").onclick = () => this.$("pop").close();
       this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
@@ -1055,7 +1066,8 @@ class BoschDishwasherCardEditor extends HTMLElement {
     this._form.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
-        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline } ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
       { name: "entity", selector: { entity: {} } },
@@ -1072,7 +1084,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "bosch-dishwasher-card",
   name: "Bosch dishwasher",
-  description: "Bosch Super Silence — status, runtime estimate, done indicator. Popup/dropdown, DE/EN.",
+  description: "Bosch Super Silence — status, runtime estimate, done indicator. Popup/dropdown/inline, DE/EN.",
   preview: false,
 });
 })();
@@ -1089,6 +1101,7 @@ window.customCards.push({
  *   type: custom:dreame-h14-card
  *   prefix: h14_pro
  *   title: "Dreame H14 Pro"
+ *   mode: popup            # "popup" (default) | "dropdown" | "inline"
  *   image: /local/h14.png   # optional photo, replaces the SVG illustration
  */
 
@@ -1250,6 +1263,7 @@ const DE = { "dreame-h14-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch"
@@ -1317,7 +1331,8 @@ const EN = { "dreame-h14-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English"
@@ -1392,7 +1407,8 @@ class DreameH14Card extends HTMLElement {
     this._cfg = Object.assign({ prefix: "h14_pro", mode: "popup", language: "auto" }, c || {});
     this._p = this._cfg.prefix;
     this._open = false;
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._psig = this._cfg.mode + "|" + this._cfg.language;
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
       this.shadowRoot.innerHTML = ""; this._sig = null;
@@ -1427,6 +1443,7 @@ class DreameH14Card extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
@@ -1468,17 +1485,17 @@ class DreameH14Card extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
- ${this._popup ? "" : `<div class="more" id="more" hidden><div id="body"></div></div>`}
+ ${this._inline ? "" : `<button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
+ ${this._popup ? "" : `<div class="more" id="more"${this._inline ? "" : " hidden"}><div id="body"></div></div>`}
 </ha-card>
 ${this._popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
  <div class="pop-bd more" id="more"><div id="body"></div></div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
-    this.classList.add("collapsed");
+    if (!this._inline) this.classList.add("collapsed");
     this.$("stage").addEventListener("click", () => this._mi(this._id("sensor", "status")));
-    this.$("disc").addEventListener("click", () => this._toggle());
+    if (!this._inline) this.$("disc").addEventListener("click", () => this._toggle());
     if (this._popup) {
       this.$("popX").onclick = () => this.$("pop").close();
       this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
@@ -1673,7 +1690,8 @@ class DreameH14CardEditor extends HTMLElement {
     this._form.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
-        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline } ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
       { name: "prefix", selector: { text: {} } },
@@ -1708,6 +1726,7 @@ window.customCards.push({
  *   map_entity: image.roborock_s7_maxv_map_0_custom     # image shown as the map
  *   rooms_entity: image.roborock_s7_maxv_map_0_custom   # entity whose `rooms` attr lists segments
  *   title: "Roborock S7 MaxV"
+ *   mode: popup                                        # "popup" (default) | "dropdown" | "inline"
  * All other entity ids have sensible defaults (see setConfig) and can be overridden in YAML.
  */
 
@@ -1886,6 +1905,7 @@ const DE = { "roborock-s7-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch"
@@ -1947,7 +1967,8 @@ const EN = { "roborock-s7-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English"
@@ -2018,7 +2039,8 @@ class RoborockS7Card extends HTMLElement {
     this._cfg = Object.assign(d, c || {});
     this._sel = new Set();
     this._open = false;
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._psig = this._cfg.mode + "|" + this._cfg.language;
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._psig) {
       this.shadowRoot.innerHTML = ""; this._sig = null;
@@ -2036,6 +2058,7 @@ class RoborockS7Card extends HTMLElement {
   _status(raw) { const m = STATUS[this._lang()] || STATUS.de; return m[raw] || (raw ? raw.replace(/_/g, " ") : "–"); }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this.$("pop").showModal(); return; }
     this._open = !this._open;
     this.$("more").hidden = !this._open;
@@ -2102,16 +2125,16 @@ class RoborockS7Card extends HTMLElement {
   </div>
  </div>
  <div class="cmds mainrow" id="cmds"></div>
- <button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
- ${this._popup ? "" : `<div class="more" id="more" hidden><div id="body"></div></div>`}
+ ${this._inline ? "" : `<button class="disc" id="disc" type="button"><span id="discTxt">${L.disc}</span><ha-icon icon="${this._popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
+ ${this._popup ? "" : `<div class="more" id="more"${this._inline ? "" : " hidden"}><div id="body"></div></div>`}
 </ha-card>
 ${this._popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd"><span class="pt" id="popT">${ttl}</span><button class="pop-x" id="popX" title="${L.close}"><ha-icon icon="mdi:close"></ha-icon></button></div>
  <div class="pop-bd more" id="more"><div id="body"></div></div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
-    this.classList.add("collapsed");
-    this.$("disc").addEventListener("click", () => this._toggle());
+    if (!this._inline) this.classList.add("collapsed");
+    if (!this._inline) this.$("disc").addEventListener("click", () => this._toggle());
     if (this._popup) {
       this.$("popX").onclick = () => this.$("pop").close();
       this.$("pop").addEventListener("click", (e) => { if (e.target === this.$("pop")) this.$("pop").close(); });
@@ -2333,7 +2356,8 @@ class RoborockS7CardEditor extends HTMLElement {
     this._form.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
-        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown } ] } } },
+        { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline } ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en } ] } } },
       { name: "vacuum", selector: { entity: {} } },
@@ -2360,7 +2384,8 @@ window.customCards.push({
 /* Smart Star Projector card (custom:star-projector-card)
  *   - `mode` (graphical-editor choosable): "popup" (default) opens the controls in
  *     a modal <dialog> that scales & is styled like Home Assistant's more-info
- *     dialog; "dropdown" expands them inline under the header.
+ *     dialog; "dropdown" expands them inline under the header on tap; "inline"
+ *     shows them in the card permanently (no toggle button).
  *   - The overlay behind the popup is always transparent (the dashboard stays
  *     fully visible). A light blur keeps the (opaque) popup crisp.
  *   - `language`: "auto" (follows HA), "de" or "en".
@@ -2370,7 +2395,7 @@ window.customCards.push({
  * config:
  *   type: custom:star-projector-card
  *   title: "Sternenprojektor"     # optional; falls back to a translated default
- *   mode: popup                   # "popup" (default) or "dropdown"
+ *   mode: popup                   # "popup" (default) | "dropdown" | "inline"
  *   language: auto                # "auto" | "de" | "en"
  *   power:    switch.smart_star_projector_master
  *   nebula:   light.smart_star_projector_background
@@ -2405,6 +2430,7 @@ const DE = { "star-projector-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch",
@@ -2437,7 +2463,8 @@ const EN = { "star-projector-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English",
@@ -2455,6 +2482,7 @@ ha-card{padding:12px 14px}
 .hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
+:host(.inline) .hd{cursor:default}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--acc);color:#fff}
@@ -2541,7 +2569,8 @@ class StarProjectorCard extends HTMLElement {
   setConfig(c) {
     const prev = this._cfg && this._cfg.mode + "|" + this._cfg.language;
     this._cfg = Object.assign({}, DEFAULTS, c || {});
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._drag = new Set();
     this._open = false;
     if (this.shadowRoot && prev !== undefined && prev !== this._cfg.mode + "|" + this._cfg.language) {
@@ -2611,6 +2640,7 @@ class StarProjectorCard extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
@@ -2641,10 +2671,10 @@ class StarProjectorCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:creation"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
- ${popup ? "" : `<div class="drop" id="body" hidden>${this._rows()}</div>`}
+ ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
 </ha-card>
 ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd">
@@ -2656,13 +2686,16 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-bd" id="body">${this._rows()}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
+    this.classList.toggle("inline", this._inline);
     const c = this._cfg;
-    // Open/close from the whole header — leading icon, title and the tune/chevron
-    // icon; the power button keeps its own handler.
-    this.$("hd").addEventListener("click", (e) => {
-      if (e.target.closest("#pwr")) return;
-      this._toggle();
-    });
+    if (!this._inline) {
+      // Open/close from the whole header — leading icon, title and the tune/chevron
+      // icon; the power button keeps its own handler.
+      this.$("hd").addEventListener("click", (e) => {
+        if (e.target.closest("#pwr")) return;
+        this._toggle();
+      });
+    }
     const togglePower = () => this._svc(this._dom(c.power), "toggle", { entity_id: c.power });
     if (popup) {
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -2757,6 +2790,7 @@ class StarProjectorCardEditor extends HTMLElement {
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
         { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline },
       ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en },
@@ -2777,19 +2811,20 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "star-projector-card",
   name: "Star Projector",
-  description: "Smart star projector — popup or dropdown; every entity selectable; DE/EN.",
+  description: "Smart star projector — popup, dropdown or inline; every entity selectable; DE/EN.",
   preview: false,
 });
 })();
 
 /* ===== wz-motion-card.js ===== */
 (() => {
-/* Motion / presence control card (popup / dropdown, DE/EN)
+/* Motion / presence control card (popup / dropdown / inline, DE/EN)
  *
  * Collapsed = header (title + master arm button; the header icon glows when the
  * room is active). Chevron / tune icon opens (dropdown or popup): a live status
  * banner + one row per motion source (name · live "detecting" dot · Active/Off
- * toggle). The toggle target may be a switch OR an automation — the service
+ * toggle). `mode: inline` shows that content in the card permanently (no toggle
+ * button). The toggle target may be a switch OR an automation — the service
  * domain is derived from the entity_id.
  *
  * The list of sources is fully editable in the visual editor (add / remove, up
@@ -2798,7 +2833,7 @@ window.customCards.push({
  * config:
  *   type: custom:wz-motion-card
  *   title: "Bewegungssensoren WZ"
- *   mode: popup                 # "popup" (default) | "dropdown"
+ *   mode: popup                 # "popup" (default) | "dropdown" | "inline"
  *   language: auto              # "auto" | "de" | "en"
  *   master: input_boolean.wz_motion_state
  *   aggregate: binary_sensor.livingdining_motion
@@ -2823,6 +2858,7 @@ const DE = { "wz-motion-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch",
@@ -2848,7 +2884,8 @@ const EN = { "wz-motion-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English",
@@ -2869,6 +2906,7 @@ ha-card{padding:12px 14px}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color);transition:color .2s}
 .hd.active>ha-icon{color:var(--live)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
+:host(.inline) .hd{cursor:default}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--armed);color:#fff}
@@ -2931,7 +2969,8 @@ class WzMotionCard extends HTMLElement {
     this._cfg = Object.assign({}, DEFAULTS, c || {});
     this._src = Array.isArray(this._cfg.sources) && this._cfg.sources.length
       ? this._cfg.sources : DEFAULTS.sources;
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._open = false;
     this._sig = [this._cfg.mode, this._cfg.language, this._src.length].join("|");
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._sig) {
@@ -2962,6 +3001,7 @@ class WzMotionCard extends HTMLElement {
   _mi(id) { this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: id }, bubbles: true, composed: true })); }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
@@ -3002,10 +3042,10 @@ class WzMotionCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:motion-sensor"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" data-act="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
- ${popup ? "" : `<div class="drop" id="body" hidden>${this._rows()}</div>`}
+ ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
 </ha-card>
 ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd" id="popHd">
@@ -3017,14 +3057,17 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-bd" id="body">${this._rows()}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
+    this.classList.toggle("inline", this._inline);
     this.$("body").addEventListener("click", (ev) => this._tap(ev), false);
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
-    // Open/close from the whole header — leading icon, title and the tune/chevron
-    // icon; the power button keeps its own handler.
-    this.$("hd").addEventListener("click", (e) => {
-      if (e.target.closest("#pwr")) return;
-      this._toggle();
-    }, false);
+    if (!this._inline) {
+      // Open/close from the whole header — leading icon, title and the tune/chevron
+      // icon; the power button keeps its own handler.
+      this.$("hd").addEventListener("click", (e) => {
+        if (e.target.closest("#pwr")) return;
+        this._toggle();
+      }, false);
+    }
     if (popup) {
       this.$("popPwr").addEventListener("click", (ev) => this._tap(ev), false);
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -3168,6 +3211,7 @@ class WzMotionCardEditor extends HTMLElement {
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
         { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline },
       ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en },
@@ -3185,20 +3229,21 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "wz-motion-card",
   name: "Motion sensors",
-  description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown, DE/EN, editable list.",
+  description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown/inline, DE/EN, editable list.",
   preview: false,
 });
 })();
 
 /* ===== wz-tv-card.js ===== */
 (() => {
-/* Living-room TV — compact control card (popup / dropdown, DE/EN)
+/* Living-room TV — compact control card (popup / dropdown / inline, DE/EN)
  *
- * Collapsed = header (title + state + power). The chevron / tune icon opens the
- * controls either as an inline dropdown or a modal popup (`mode`). Everything is
- * configurable in the visual editor:
- *   - all entities (media_player, TV-light scene, Sync Box power + sync button,
- *     HDMI-source select)
+ * Collapsed = header (title + power). The chevron / tune icon opens the controls
+ * as an inline dropdown or a modal popup; `mode: inline` shows them in the card
+ * permanently (no toggle button). Everything is configurable in the visual
+ * editor:
+ *   - all entities (media_player, TV-light scene, Sync Box power + sync button +
+ *     sync state, HDMI-source select)
  *   - "Remotes": 1–4 navigation buttons  (label / icon / navigation path)
  *   - "HDMI source": 1–4 chips           (select option / icon)
  *   - "Sound": 1–4 toggle entities        (entity / label / icon)
@@ -3207,12 +3252,13 @@ window.customCards.push({
  * config:
  *   type: custom:wz-tv-card
  *   title: "Fernseher"
- *   mode: popup            # "popup" (default) | "dropdown"
+ *   mode: popup            # "popup" (default) | "dropdown" | "inline"
  *   language: auto         # "auto" | "de" | "en"
  *   media_player: media_player.samsungtv
  *   tv_light_scene: scene.wz_alle_fernsehlicht
  *   sync_power: switch.sync_box_power
  *   sync_button: input_button.sync_box_sync
+ *   sync_state: switch.sync_box_light_sync
  *   hdmi_select: select.sync_box_hdmi_input
  *   remotes: [ { label, icon, path }, ... ]      # 1..4
  *   hdmi:    [ { option, icon }, ... ]           # 1..4
@@ -3231,8 +3277,6 @@ const DE = { "wz-tv-card": {
   sync: "Sync",
   sync_now: "Jetzt synchronisieren",
   sound: "Ton",
-  on: "Ein",
-  off: "Aus",
   settings: "Steuerung",
   expand: "Ein-/Ausklappen",
   power: "TV ein/aus",
@@ -3242,6 +3286,7 @@ const DE = { "wz-tv-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch",
@@ -3249,6 +3294,7 @@ const DE = { "wz-tv-card": {
   e_tv_light: "TV-Licht Szene",
   e_sync_power: "Sync Box Power (switch)",
   e_sync_button: "Sync Box Sync (button)",
+  e_sync_state: "Sync Box Sync-Status (switch)",
   e_hdmi_select: "HDMI-Quelle (select)",
   e_remotes: "Fernbedienungen (1–4)",
   e_hdmi_list: "HDMI-Quellen (1–4)",
@@ -3270,8 +3316,6 @@ const EN = { "wz-tv-card": {
   sync: "Sync",
   sync_now: "Sync now",
   sound: "Sound",
-  on: "On",
-  off: "Off",
   settings: "Controls",
   expand: "Expand / collapse",
   power: "TV on/off",
@@ -3280,7 +3324,8 @@ const EN = { "wz-tv-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English",
@@ -3288,6 +3333,7 @@ const EN = { "wz-tv-card": {
   e_tv_light: "TV light scene",
   e_sync_power: "Sync Box power (switch)",
   e_sync_button: "Sync Box sync (button)",
+  e_sync_state: "Sync Box sync state (switch)",
   e_hdmi_select: "HDMI source (select)",
   e_remotes: "Remote buttons (1–4)",
   e_hdmi_list: "HDMI sources (1–4)",
@@ -3307,7 +3353,7 @@ ha-card{padding:12px 14px}
 .hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
-.src{font-size:11px;font-weight:700;color:var(--secondary-text-color);margin-right:2px}
+:host(.inline) .hd{cursor:default}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--acc);color:#fff}
@@ -3355,6 +3401,7 @@ const DEFAULTS = {
   tv_light_scene: "scene.wz_alle_fernsehlicht",
   sync_power: "switch.sync_box_power",
   sync_button: "input_button.sync_box_sync",
+  sync_state: "switch.sync_box_light_sync",
   hdmi_select: "select.sync_box_hdmi_input",
   remotes: [
     { label: "waipu.tv", icon: "phu:waiputv", path: "/lovelace/firetv" },
@@ -3388,7 +3435,8 @@ class WzTvCard extends HTMLElement {
     this._cfg.remotes = clampList(c && c.remotes, DEFAULTS.remotes);
     this._cfg.hdmi = clampList(c && c.hdmi, DEFAULTS.hdmi);
     this._cfg.ton = clampList(c && c.ton, DEFAULTS.ton);
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._open = false;
     this._sig = [this._cfg.mode, this._cfg.language, this._cfg.remotes.length,
       this._cfg.hdmi.length, this._cfg.ton.length].join("|");
@@ -3427,6 +3475,7 @@ class WzTvCard extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
@@ -3463,7 +3512,7 @@ class WzTvCard extends HTMLElement {
    <span class="lbl">${this._t("light_sync")}</span>
    <button class="btn" data-act="light"><ha-icon icon="mdi:television-ambient-light"></ha-icon>${this._t("tv_light")}</button>
    <button class="btn" id="syncPwr" data-act="syncPwr"><ha-icon icon="hue:sync-box"></ha-icon>${this._t("sync_box")}</button>
-   <button class="btn" data-act="syncGo" title="${this._t("sync_now")}"><ha-icon icon="mdi:sync"></ha-icon>${this._t("sync")}</button>
+   <button class="btn" id="syncGo" data-act="syncGo" title="${this._t("sync_now")}"><ha-icon icon="mdi:sync"></ha-icon>${this._t("sync")}</button>
   </div>
   <div class="row"><span class="lbl">${this._t("sound")}</span>${tonBtns}</div>`;
   }
@@ -3477,11 +3526,10 @@ class WzTvCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:television"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  <span class="src" id="src"></span>
-  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" data-act="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
- ${popup ? "" : `<div class="drop" id="body" hidden>${this._rows()}</div>`}
+ ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
 </ha-card>
 ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd">
@@ -3493,14 +3541,17 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-bd" id="body">${this._rows()}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
+    this.classList.toggle("inline", this._inline);
     this.$("body").addEventListener("click", (ev) => this._tap(ev), false);
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
-    // Open/close from the whole header — leading icon, title, state and the
-    // tune/chevron icon; the power button keeps its own handler.
-    this.$("hd").addEventListener("click", (e) => {
-      if (e.target.closest("#pwr")) return;
-      this._toggle();
-    }, false);
+    if (!this._inline) {
+      // Open/close from the whole header — leading icon, title and the
+      // tune/chevron icon; the power button keeps its own handler.
+      this.$("hd").addEventListener("click", (e) => {
+        if (e.target.closest("#pwr")) return;
+        this._toggle();
+      }, false);
+    }
     if (popup) {
       this.$("popPwr").addEventListener("click", (ev) => this._tap(ev), false);
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -3541,12 +3592,11 @@ ${popup ? `<dialog class="pop" id="pop">
     const tvOn = !["off", "unavailable", "unknown", "standby", "idle"].includes(mp.state);
     this.$("pwr").className = "pwr" + (tvOn ? " on" : "");
     if (this.$("popPwr")) this.$("popPwr").className = "pwr" + (tvOn ? " on" : "");
-    const title = mp.attributes && mp.attributes.media_title;
-    this.$("src").textContent = tvOn ? (title || this._t("on")) : this._t("off");
 
     const cur = this._st(c.hdmi_select);
     this.shadowRoot.querySelectorAll("#hdmi .chip").forEach((ch) => ch.classList.toggle("on", ch.dataset.o === cur));
     if (this.$("syncPwr")) this.$("syncPwr").classList.toggle("on", this._on(c.sync_power));
+    if (this.$("syncGo")) this.$("syncGo").classList.toggle("on", this._on(c.sync_state));
     this.shadowRoot.querySelectorAll('[data-act="ton"]').forEach((b) => {
       const e = (c.ton[Number(b.dataset.i)] || {}).entity;
       b.classList.toggle("on", e ? this._on(e) : false);
@@ -3651,20 +3701,23 @@ class WzTvCardEditor extends HTMLElement {
     this._base.computeLabel = (s) => ({
       title: L.e_title, mode: L.e_mode, language: L.e_language,
       media_player: L.e_media, tv_light_scene: L.e_tv_light,
-      sync_power: L.e_sync_power, sync_button: L.e_sync_button, hdmi_select: L.e_hdmi_select,
+      sync_power: L.e_sync_power, sync_button: L.e_sync_button, sync_state: L.e_sync_state,
+      hdmi_select: L.e_hdmi_select,
     }[s.name] || s.name);
     this._base.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
         { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline },
       ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en },
       ] } } },
       { name: "media_player", selector: { entity: {} } },
-      { name: "tv_light_scene", selector: { entity: {} } },
+      { name: "tv_light_scene", selector: { entity: { domain: "scene" } } },
       { name: "sync_power", selector: { entity: {} } },
       { name: "sync_button", selector: { entity: {} } },
+      { name: "sync_state", selector: { entity: {} } },
       { name: "hdmi_select", selector: { entity: {} } },
     ];
     this._base.data = this._config;
@@ -3677,7 +3730,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "wz-tv-card",
   name: "Living-room TV",
-  description: "Compact TV control — power, remotes, HDMI source, Sync Box, sound. Popup/dropdown, DE/EN.",
+  description: "Compact TV control — power, remotes, HDMI source, Sync Box, sound. Popup/dropdown/inline, DE/EN.",
   preview: false,
 });
 })();

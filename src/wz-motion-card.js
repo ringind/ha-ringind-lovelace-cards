@@ -1,9 +1,10 @@
-/* Motion / presence control card (popup / dropdown, DE/EN)
+/* Motion / presence control card (popup / dropdown / inline, DE/EN)
  *
  * Collapsed = header (title + master arm button; the header icon glows when the
  * room is active). Chevron / tune icon opens (dropdown or popup): a live status
  * banner + one row per motion source (name · live "detecting" dot · Active/Off
- * toggle). The toggle target may be a switch OR an automation — the service
+ * toggle). `mode: inline` shows that content in the card permanently (no toggle
+ * button). The toggle target may be a switch OR an automation — the service
  * domain is derived from the entity_id.
  *
  * The list of sources is fully editable in the visual editor (add / remove, up
@@ -12,7 +13,7 @@
  * config:
  *   type: custom:wz-motion-card
  *   title: "Bewegungssensoren WZ"
- *   mode: popup                 # "popup" (default) | "dropdown"
+ *   mode: popup                 # "popup" (default) | "dropdown" | "inline"
  *   language: auto              # "auto" | "de" | "en"
  *   master: input_boolean.wz_motion_state
  *   aggregate: binary_sensor.livingdining_motion
@@ -33,6 +34,7 @@ ha-card{padding:12px 14px}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--secondary-text-color);transition:color .2s}
 .hd.active>ha-icon{color:var(--live)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
+:host(.inline) .hd{cursor:default}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--armed);color:#fff}
@@ -95,7 +97,8 @@ class WzMotionCard extends HTMLElement {
     this._cfg = Object.assign({}, DEFAULTS, c || {});
     this._src = Array.isArray(this._cfg.sources) && this._cfg.sources.length
       ? this._cfg.sources : DEFAULTS.sources;
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._open = false;
     this._sig = [this._cfg.mode, this._cfg.language, this._src.length].join("|");
     if (this.shadowRoot && prevSig !== undefined && prevSig !== this._sig) {
@@ -126,6 +129,7 @@ class WzMotionCard extends HTMLElement {
   _mi(id) { this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: id }, bubbles: true, composed: true })); }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
@@ -166,10 +170,10 @@ class WzMotionCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:motion-sensor"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" data-act="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
- ${popup ? "" : `<div class="drop" id="body" hidden>${this._rows()}</div>`}
+ ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
 </ha-card>
 ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd" id="popHd">
@@ -181,14 +185,17 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-bd" id="body">${this._rows()}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
+    this.classList.toggle("inline", this._inline);
     this.$("body").addEventListener("click", (ev) => this._tap(ev), false);
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
-    // Open/close from the whole header — leading icon, title and the tune/chevron
-    // icon; the power button keeps its own handler.
-    this.$("hd").addEventListener("click", (e) => {
-      if (e.target.closest("#pwr")) return;
-      this._toggle();
-    }, false);
+    if (!this._inline) {
+      // Open/close from the whole header — leading icon, title and the tune/chevron
+      // icon; the power button keeps its own handler.
+      this.$("hd").addEventListener("click", (e) => {
+        if (e.target.closest("#pwr")) return;
+        this._toggle();
+      }, false);
+    }
     if (popup) {
       this.$("popPwr").addEventListener("click", (ev) => this._tap(ev), false);
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -332,6 +339,7 @@ class WzMotionCardEditor extends HTMLElement {
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
         { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline },
       ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en },
@@ -349,6 +357,6 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "wz-motion-card",
   name: "Motion sensors",
-  description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown, DE/EN, editable list.",
+  description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown/inline, DE/EN, editable list.",
   preview: false,
 });

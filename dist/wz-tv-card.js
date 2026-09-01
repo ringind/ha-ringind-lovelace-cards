@@ -1,10 +1,11 @@
-/* Living-room TV — compact control card (popup / dropdown, DE/EN)
+/* Living-room TV — compact control card (popup / dropdown / inline, DE/EN)
  *
- * Collapsed = header (title + state + power). The chevron / tune icon opens the
- * controls either as an inline dropdown or a modal popup (`mode`). Everything is
- * configurable in the visual editor:
- *   - all entities (media_player, TV-light scene, Sync Box power + sync button,
- *     HDMI-source select)
+ * Collapsed = header (title + power). The chevron / tune icon opens the controls
+ * as an inline dropdown or a modal popup; `mode: inline` shows them in the card
+ * permanently (no toggle button). Everything is configurable in the visual
+ * editor:
+ *   - all entities (media_player, TV-light scene, Sync Box power + sync button +
+ *     sync state, HDMI-source select)
  *   - "Remotes": 1–4 navigation buttons  (label / icon / navigation path)
  *   - "HDMI source": 1–4 chips           (select option / icon)
  *   - "Sound": 1–4 toggle entities        (entity / label / icon)
@@ -13,12 +14,13 @@
  * config:
  *   type: custom:wz-tv-card
  *   title: "Fernseher"
- *   mode: popup            # "popup" (default) | "dropdown"
+ *   mode: popup            # "popup" (default) | "dropdown" | "inline"
  *   language: auto         # "auto" | "de" | "en"
  *   media_player: media_player.samsungtv
  *   tv_light_scene: scene.wz_alle_fernsehlicht
  *   sync_power: switch.sync_box_power
  *   sync_button: input_button.sync_box_sync
+ *   sync_state: switch.sync_box_light_sync
  *   hdmi_select: select.sync_box_hdmi_input
  *   remotes: [ { label, icon, path }, ... ]      # 1..4
  *   hdmi:    [ { option, icon }, ... ]           # 1..4
@@ -37,8 +39,6 @@ const DE = { "wz-tv-card": {
   sync: "Sync",
   sync_now: "Jetzt synchronisieren",
   sound: "Ton",
-  on: "Ein",
-  off: "Aus",
   settings: "Steuerung",
   expand: "Ein-/Ausklappen",
   power: "TV ein/aus",
@@ -48,6 +48,7 @@ const DE = { "wz-tv-card": {
   e_language: "Sprache",
   e_popup: "Popup",
   e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
   e_auto: "Automatisch (HA)",
   e_de: "Deutsch",
   e_en: "Englisch",
@@ -55,6 +56,7 @@ const DE = { "wz-tv-card": {
   e_tv_light: "TV-Licht Szene",
   e_sync_power: "Sync Box Power (switch)",
   e_sync_button: "Sync Box Sync (button)",
+  e_sync_state: "Sync Box Sync-Status (switch)",
   e_hdmi_select: "HDMI-Quelle (select)",
   e_remotes: "Fernbedienungen (1–4)",
   e_hdmi_list: "HDMI-Quellen (1–4)",
@@ -76,8 +78,6 @@ const EN = { "wz-tv-card": {
   sync: "Sync",
   sync_now: "Sync now",
   sound: "Sound",
-  on: "On",
-  off: "Off",
   settings: "Controls",
   expand: "Expand / collapse",
   power: "TV on/off",
@@ -86,7 +86,8 @@ const EN = { "wz-tv-card": {
   e_mode: "Display",
   e_language: "Language",
   e_popup: "Popup",
-  e_dropdown: "Inline dropdown",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
   e_auto: "Automatic (HA)",
   e_de: "German",
   e_en: "English",
@@ -94,6 +95,7 @@ const EN = { "wz-tv-card": {
   e_tv_light: "TV light scene",
   e_sync_power: "Sync Box power (switch)",
   e_sync_button: "Sync Box sync (button)",
+  e_sync_state: "Sync Box sync state (switch)",
   e_hdmi_select: "HDMI source (select)",
   e_remotes: "Remote buttons (1–4)",
   e_hdmi_list: "HDMI sources (1–4)",
@@ -113,7 +115,7 @@ ha-card{padding:12px 14px}
 .hd{display:flex;align-items:center;gap:9px;cursor:pointer}
 .hd>ha-icon{--mdc-icon-size:20px;color:var(--acc)}
 .ttl{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color)}
-.src{font-size:11px;font-weight:700;color:var(--secondary-text-color);margin-right:2px}
+:host(.inline) .hd{cursor:default}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--acc);color:#fff}
@@ -161,6 +163,7 @@ const DEFAULTS = {
   tv_light_scene: "scene.wz_alle_fernsehlicht",
   sync_power: "switch.sync_box_power",
   sync_button: "input_button.sync_box_sync",
+  sync_state: "switch.sync_box_light_sync",
   hdmi_select: "select.sync_box_hdmi_input",
   remotes: [
     { label: "waipu.tv", icon: "phu:waiputv", path: "/lovelace/firetv" },
@@ -194,7 +197,8 @@ class WzTvCard extends HTMLElement {
     this._cfg.remotes = clampList(c && c.remotes, DEFAULTS.remotes);
     this._cfg.hdmi = clampList(c && c.hdmi, DEFAULTS.hdmi);
     this._cfg.ton = clampList(c && c.ton, DEFAULTS.ton);
-    this._popup = this._cfg.mode !== "dropdown";
+    this._popup = this._cfg.mode === "popup";
+    this._inline = this._cfg.mode === "inline";
     this._open = false;
     this._sig = [this._cfg.mode, this._cfg.language, this._cfg.remotes.length,
       this._cfg.hdmi.length, this._cfg.ton.length].join("|");
@@ -233,6 +237,7 @@ class WzTvCard extends HTMLElement {
   }
 
   _toggle() {
+    if (this._inline) return;
     if (this._popup) { this._openPop(); return; }
     this._open = !this._open;
     this.$("body").hidden = !this._open;
@@ -269,7 +274,7 @@ class WzTvCard extends HTMLElement {
    <span class="lbl">${this._t("light_sync")}</span>
    <button class="btn" data-act="light"><ha-icon icon="mdi:television-ambient-light"></ha-icon>${this._t("tv_light")}</button>
    <button class="btn" id="syncPwr" data-act="syncPwr"><ha-icon icon="hue:sync-box"></ha-icon>${this._t("sync_box")}</button>
-   <button class="btn" data-act="syncGo" title="${this._t("sync_now")}"><ha-icon icon="mdi:sync"></ha-icon>${this._t("sync")}</button>
+   <button class="btn" id="syncGo" data-act="syncGo" title="${this._t("sync_now")}"><ha-icon icon="mdi:sync"></ha-icon>${this._t("sync")}</button>
   </div>
   <div class="row"><span class="lbl">${this._t("sound")}</span>${tonBtns}</div>`;
   }
@@ -283,11 +288,10 @@ class WzTvCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:television"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  <span class="src" id="src"></span>
-  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>
+  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" data-act="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
- ${popup ? "" : `<div class="drop" id="body" hidden>${this._rows()}</div>`}
+ ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
 </ha-card>
 ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-hd">
@@ -299,14 +303,17 @@ ${popup ? `<dialog class="pop" id="pop">
  <div class="pop-bd" id="body">${this._rows()}</div>
 </dialog>` : ""}`;
     this.$ = (id) => r.getElementById(id);
+    this.classList.toggle("inline", this._inline);
     this.$("body").addEventListener("click", (ev) => this._tap(ev), false);
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
-    // Open/close from the whole header — leading icon, title, state and the
-    // tune/chevron icon; the power button keeps its own handler.
-    this.$("hd").addEventListener("click", (e) => {
-      if (e.target.closest("#pwr")) return;
-      this._toggle();
-    }, false);
+    if (!this._inline) {
+      // Open/close from the whole header — leading icon, title and the
+      // tune/chevron icon; the power button keeps its own handler.
+      this.$("hd").addEventListener("click", (e) => {
+        if (e.target.closest("#pwr")) return;
+        this._toggle();
+      }, false);
+    }
     if (popup) {
       this.$("popPwr").addEventListener("click", (ev) => this._tap(ev), false);
       this.$("closeBtn").onclick = () => this.$("pop").close();
@@ -347,12 +354,11 @@ ${popup ? `<dialog class="pop" id="pop">
     const tvOn = !["off", "unavailable", "unknown", "standby", "idle"].includes(mp.state);
     this.$("pwr").className = "pwr" + (tvOn ? " on" : "");
     if (this.$("popPwr")) this.$("popPwr").className = "pwr" + (tvOn ? " on" : "");
-    const title = mp.attributes && mp.attributes.media_title;
-    this.$("src").textContent = tvOn ? (title || this._t("on")) : this._t("off");
 
     const cur = this._st(c.hdmi_select);
     this.shadowRoot.querySelectorAll("#hdmi .chip").forEach((ch) => ch.classList.toggle("on", ch.dataset.o === cur));
     if (this.$("syncPwr")) this.$("syncPwr").classList.toggle("on", this._on(c.sync_power));
+    if (this.$("syncGo")) this.$("syncGo").classList.toggle("on", this._on(c.sync_state));
     this.shadowRoot.querySelectorAll('[data-act="ton"]').forEach((b) => {
       const e = (c.ton[Number(b.dataset.i)] || {}).entity;
       b.classList.toggle("on", e ? this._on(e) : false);
@@ -457,20 +463,23 @@ class WzTvCardEditor extends HTMLElement {
     this._base.computeLabel = (s) => ({
       title: L.e_title, mode: L.e_mode, language: L.e_language,
       media_player: L.e_media, tv_light_scene: L.e_tv_light,
-      sync_power: L.e_sync_power, sync_button: L.e_sync_button, hdmi_select: L.e_hdmi_select,
+      sync_power: L.e_sync_power, sync_button: L.e_sync_button, sync_state: L.e_sync_state,
+      hdmi_select: L.e_hdmi_select,
     }[s.name] || s.name);
     this._base.schema = [
       { name: "title", selector: { text: {} } },
       { name: "mode", selector: { select: { mode: "dropdown", options: [
         { value: "popup", label: L.e_popup }, { value: "dropdown", label: L.e_dropdown },
+        { value: "inline", label: L.e_inline },
       ] } } },
       { name: "language", selector: { select: { mode: "dropdown", options: [
         { value: "auto", label: L.e_auto }, { value: "de", label: L.e_de }, { value: "en", label: L.e_en },
       ] } } },
       { name: "media_player", selector: { entity: {} } },
-      { name: "tv_light_scene", selector: { entity: {} } },
+      { name: "tv_light_scene", selector: { entity: { domain: "scene" } } },
       { name: "sync_power", selector: { entity: {} } },
       { name: "sync_button", selector: { entity: {} } },
+      { name: "sync_state", selector: { entity: {} } },
       { name: "hdmi_select", selector: { entity: {} } },
     ];
     this._base.data = this._config;
@@ -483,6 +492,6 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "wz-tv-card",
   name: "Living-room TV",
-  description: "Compact TV control — power, remotes, HDMI source, Sync Box, sound. Popup/dropdown, DE/EN.",
+  description: "Compact TV control — power, remotes, HDMI source, Sync Box, sound. Popup/dropdown/inline, DE/EN.",
   preview: false,
 });
