@@ -17,6 +17,8 @@ Every card exposes its entities as config options for exactly that reason.
 | `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Popup or dropdown. |
 | `custom:roborock-s7-card` | Roborock S7 MaxV | Live map image, start/pause/stop/dock/locate, **area cleaning** via `vacuum.clean_area`, fan speed, mop settings, status & lifetime stats. Popup or dropdown. |
 | `custom:dreame-h14-card` | Dreame H14 Pro | Hand‑pushed wet/dry vacuum — tank/consumable alerts, the two dock actions, suction/water/brush levels, wear counters. Popup or dropdown. |
+| `custom:shutter-automation-card` | Rolladen‑Automatik | Sun/azimuth/temperature/brightness shading automation — status, editable close/open thresholds, manual close/open scripts, optional horizon‑card info block. Popup or dropdown. |
+| `custom:select-button-card` | Select Button | Tile‑style **push button**: tapping the whole card selects one fixed `option` of a `select` entity (`select.select_option`); the round icon badge lights up in the active colour while that option is the one currently selected. Hold = more‑info. No popup/dropdown — it *is* a button. |
 
 Code comments are English. User‑facing text is bilingual: every card takes a
 `language` option (`auto` / `de` / `en`) — `auto` follows the Home Assistant UI
@@ -32,6 +34,9 @@ language and falls back to German.
 
 The four appliance/cleaning cards (`aeg-…`, `bosch-…`, `roborock-…`, `dreame-…`) keep a
 fixed collapsed height so they line up side by side.
+
+`custom:select-button-card` is the exception to the `mode` option — it is a single
+push button with nothing to expand, so it takes only `language` (and `title` via `name`).
 
 ---
 
@@ -239,6 +244,30 @@ title: Dreame H14 Pro    # optional
 Plus the [common options](#common-options-all-cards). All entities derive from `prefix`
 (`<domain>.<prefix>_<suffix>`). This is a hand‑pushed floor washer — the card has no
 autonomous run, only the two dock actions (`*_start_self_cleaning`, `*_start_self_drying`).
+
+### `custom:select-button-card`
+
+```yaml
+type: custom:select-button-card
+entity: select.wohnzimmer_szene       # required — the target select entity
+option: Filmabend                     # required — the option this button activates
+name: Filmabend                       # optional — defaults to the entity's friendly name
+icon: mdi:movie-open                  # optional — defaults to the entity icon
+color: amber                          # optional — HA theme colour name or any CSS colour / #hex
+language: auto                        # auto | de | en (editor labels + "not found" notice)
+```
+
+| Option | Default | Notes |
+|---|---|---|
+| `entity` | — | The `select` entity. Picked from a `select`‑only picker in the editor. |
+| `option` | — | The option to activate. Editor offers the entity's live options as a dropdown (free text also allowed). |
+| `name` | entity friendly name | Card label. |
+| `icon` | entity icon → `mdi:gesture-tap-button` | mdi icon. |
+| `color` | HA active‑state amber (`--state-active-color`) | Theme colour name (`amber`, `blue`, `primary`, …) or a literal CSS colour / `#hex`. Used for the lit icon badge. |
+
+**Tap** anywhere on the card → `select.select_option`. **Hold** → the entity's more‑info
+dialog. The icon badge is grey while the current state is anything else and switches to
+`color` the moment the entity's state equals `option`. No `mode` option (see above).
 
 ---
 

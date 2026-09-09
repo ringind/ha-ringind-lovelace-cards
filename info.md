@@ -1,6 +1,6 @@
 # HA Lovelace Cards (Ring)
 
-Seven vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
+Nine vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
 
 - **`custom:star-projector-card`** – smart star projector; controls as a modal popup
   or an inline dropdown (`mode`), every entity a selectable editor field.
@@ -12,9 +12,14 @@ Seven vanilla‑JS custom Lovelace cards (no framework, each with a visual edito
 - **`custom:bosch-dishwasher-card`** – "non‑smart" dishwasher driven by one `input_boolean`.
 - **`custom:roborock-s7-card`** – map, controls, area cleaning via `vacuum.clean_area`.
 - **`custom:dreame-h14-card`** – hand‑pushed wet/dry vacuum, tank alerts, dock actions.
+- **`custom:shutter-automation-card`** – sun/azimuth/temp/brightness shading automation with
+  editable thresholds and manual close/open scripts.
+- **`custom:select-button-card`** – tile‑style push button that activates one fixed option of
+  a `select` entity; the icon lights up while that option is active.
 
-Every card takes `mode` (`popup` / `dropdown`) and `language` (`auto` / `de` / `en`).
-UI text is bilingual German/English; `auto` follows the HA UI language.
+Every card takes `language` (`auto` / `de` / `en`); all but `select-button-card` also take
+`mode` (`popup` / `dropdown`). UI text is bilingual German/English; `auto` follows the HA UI
+language.
 
 **These cards ship with default entity IDs from one specific setup — change them in each
 card's editor.** After download, hard‑refresh the browser and add the cards from the picker.
