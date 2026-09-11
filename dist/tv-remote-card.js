@@ -6,21 +6,22 @@
  *      "please configure" until entities are picked; the repeatable lists ("remotes",
  *      "hdmi", "ton") start at 0 items instead of 1-4 example rows.
  *   2. An extra "waipu.tv remote" section: a fixed-layout on-screen replica of the
- *      physical waipu.tv Box remote (every button from the official manual — power, mic/
- *      Google Assistant, numeric keypad, guide, last-channel, live-TV, HDMI source,
- *      D-pad + OK/back/menu, home, mute, channel +/-, volume +/-, rewind/play-pause/FF,
- *      restart, record, next, waiputhek and Netflix). Every button sends a fixed Android
- *      TV command — see the table in `_remoteRows()` — to ONE configurable `remote.*`
- *      entity (the Home Assistant "Android TV Remote" integration). Two buttons have no
- *      exact 1:1 Android TV Remote equivalent and are a documented best effort:
+ *      physical waipu.tv Box remote (every button from the official manual except the
+ *      Netflix/waiputhek app-launch pair, removed — power, mic/Google Assistant, numeric
+ *      keypad, guide, last-channel, live-TV, HDMI source, D-pad + OK/back/menu, home,
+ *      mute, channel +/-, volume +/-, rewind/play-pause/FF, restart, record, next). Every
+ *      button sends a fixed Android TV command — see the table in `_remoteRows()` — to
+ *      ONE configurable `remote.*` entity (the Home Assistant "Android TV Remote"
+ *      integration). Two buttons have no exact 1:1 Android TV Remote equivalent and are a
+ *      documented best effort:
  *        - "Letzter Sender" sends the raw Android keycode 229 (KEYCODE_LAST_CHANNEL) —
  *          not in HA's named-command list, so this depends on the integration passing
  *          unrecognized numeric strings straight through.
  *        - "Von Beginn starten" (restart current program) sends MEDIA_PREVIOUS, the
  *          closest standard media semantic — Android TV has no dedicated key for it.
- *      Netflix and waiputhek use `remote.turn_on` with an `activity` deep link (HA's
- *      documented app-launch mechanism); both links are plain user-supplied text fields
- *      (no default) since the correct deep link depends on the installed app build.
+ *      Volume +/-/Mute target a separately configurable `volume_player` media_player
+ *      (the physical remote controls the TV/soundbar directly, not the box) when set,
+ *      falling back to an Android TV Remote command on `waipu_remote` otherwise.
  *
  * Everything else (remotes/HDMI/Sync/Sound rows) is unchanged from wz-tv-card.
  *
@@ -36,9 +37,11 @@
  *   sync_state: switch.xxx
  *   hdmi_select: select.xxx
  *   waipu_remote: remote.xxx          # Android TV Remote integration entity
+ *   volume_player: media_player.xxx   # optional — Vol+/Vol-/Mute target a TV/soundbar media_player
+ *                                      # here instead of the box's Android TV Remote entity (the
+ *                                      # physical remote controls the TV's volume directly, not the
+ *                                      # box); falls back to remote.send_command when unset.
  *   waipu_hdmi_option: "waipu.tv"     # option string on hdmi_select for the "Quelle" button
- *   netflix_link: "https://www.netflix.com"      # remote.turn_on activity deep link
- *   waiputhek_link: "https://..."                # remote.turn_on activity deep link
  *   remotes: [ { label, icon, path }, ... ]      # 0..4
  *   hdmi:    [ { option, icon }, ... ]           # 0..4
  *   ton:     [ { entity, label, icon }, ... ]    # 0..4
@@ -87,8 +90,6 @@ const DE = { "tv-remote-card": {
   btn_restart: "Von Beginn starten",
   btn_rec: "Aufnehmen",
   btn_next: "Vor / nächster Inhalt",
-  btn_waiputhek: "waiputhek",
-  btn_netflix: "Netflix",
   e_title: "Titel",
   e_mode: "Anzeige",
   e_language: "Sprache",
@@ -106,8 +107,7 @@ const DE = { "tv-remote-card": {
   e_hdmi_select: "HDMI-Quelle (select)",
   e_waipu_remote: "waipu.tv Remote-Entität (Android TV Remote)",
   e_waipu_hdmi_option: "HDMI-Option für waipu.tv (Quelle-Taste)",
-  e_netflix_link: "Netflix App-Link (remote.turn_on activity)",
-  e_waiputhek_link: "waiputhek App-Link (remote.turn_on activity)",
+  e_volume_player: "Lautstärke-Ziel für Lauter/Leiser/Stumm (Media-Player, optional)",
   e_remotes: "Fernbedienungen (0–4)",
   e_hdmi_list: "HDMI-Quellen (0–4)",
   e_ton: "Ton-Schalter (0–4)",
@@ -159,8 +159,6 @@ const EN = { "tv-remote-card": {
   btn_restart: "Restart from beginning",
   btn_rec: "Record",
   btn_next: "Next / skip to live",
-  btn_waiputhek: "waiputhek",
-  btn_netflix: "Netflix",
   e_title: "Title",
   e_mode: "Display",
   e_language: "Language",
@@ -178,8 +176,7 @@ const EN = { "tv-remote-card": {
   e_hdmi_select: "HDMI source (select)",
   e_waipu_remote: "waipu.tv remote entity (Android TV Remote)",
   e_waipu_hdmi_option: "HDMI option for waipu.tv (Source button)",
-  e_netflix_link: "Netflix app link (remote.turn_on activity)",
-  e_waiputhek_link: "waiputhek app link (remote.turn_on activity)",
+  e_volume_player: "Volume target for Vol+/Vol-/Mute (media player, optional)",
   e_remotes: "Remote buttons (0–4)",
   e_hdmi_list: "HDMI sources (0–4)",
   e_ton: "Sound toggles (0–4)",
@@ -225,19 +222,17 @@ ha-card{padding:12px 14px}
 .rc{margin-top:14px;padding-top:10px;border-top:1px solid var(--divider-color)}
 .rc-hd{font-size:12px;font-weight:700;color:var(--secondary-text-color);margin:0 0 8px;text-align:center;text-transform:uppercase;letter-spacing:.03em}
 .rc-row{display:flex;gap:6px;justify-content:center;margin-bottom:6px;max-width:230px;margin-left:auto;margin-right:auto}
-.rc-btn{flex:1 1 0;max-width:64px;aspect-ratio:1/1;border:1px solid var(--divider-color);border-radius:14px;background:var(--card-background-color);color:var(--primary-text-color);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;padding:0}
-.rc-btn ha-icon{--mdc-icon-size:18px;color:var(--secondary-text-color)}
+.rc-btn{flex:1 1 0;max-width:64px;aspect-ratio:1/1;border:1px solid var(--divider-color);border-radius:14px;background:var(--card-background-color);color:var(--primary-text-color);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-weight:700;font-size:19px;padding:0}
+.rc-btn ha-icon{--mdc-icon-size:23px;color:var(--secondary-text-color)}
 .rc-btn:active{transform:translateY(1px)}
 .rc-btn[disabled]{opacity:.35;cursor:default;pointer-events:none}
+.rc-btn.rc-nav{background:var(--secondary-background-color, rgba(127,127,127,.18));border-color:var(--secondary-background-color, rgba(127,127,127,.3))}
+.rc-btn.rc-nav ha-icon{color:var(--primary-text-color)}
 .rc-ghost{flex:1 1 0;max-width:64px}
 .rc-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:216px;margin:0 auto 6px}
 .rc-grid3 .rc-btn{max-width:none}
 .rc-num{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:200px;margin:0 auto 6px}
 .rc-num .rc-btn{max-width:none}
-.rc-pillrow{display:flex;gap:6px;max-width:230px;margin:2px auto 0}
-.rc-pill{flex:1 1 auto;border:1px solid var(--divider-color);border-radius:999px;min-height:36px;background:var(--card-background-color);color:var(--primary-text-color);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;padding:0 10px}
-.rc-pill:active{transform:translateY(1px)}
-.rc-pill[disabled]{opacity:.35;cursor:default;pointer-events:none}
 
 dialog.pop{border:none;margin:auto;padding:0;width:min(500px, calc(100vw - 32px));max-width:min(500px, calc(100vw - 32px));max-height:calc(100% - 72px);border-radius:var(--ha-dialog-border-radius, 28px);color:var(--primary-text-color);background:var(--ha-dialog-surface-background, var(--mdc-theme-surface, var(--card-background-color, #fff)));box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);font-family:var(--mdc-typography-body1-font-family, var(--ha-font-family-body, inherit));font-size:1rem;overflow:hidden;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 dialog.pop[open]{display:flex;flex-direction:column}
@@ -335,13 +330,12 @@ class TvRemoteCard extends HTMLElement {
   }
 
   // ---- waipu.tv remote: fixed replica of the physical remote's button layout ----
-  // Every button targets ONE configured `remote.*` entity (Android TV Remote
-  // integration). Commands are fixed (not user-configurable) — only the target
-  // entity and the two app-link / HDMI-option fields come from the editor.
+  // Commands are fixed (not user-configurable) — only the target entities
+  // (waipu_remote, volume_player) and the HDMI-option field come from the editor.
   _remoteRows() {
     const L = this._L();
-    const cmd = (c, icon, key, label) =>
-      `<button class="rc-btn" data-act="wcmd|${c}" title="${label}"><ha-icon icon="${icon}"></ha-icon></button>`;
+    const cmd = (c, icon, key, label, extra) =>
+      `<button class="rc-btn${extra ? " " + extra : ""}" data-act="wcmd|${c}" title="${label}"><ha-icon icon="${icon}"></ha-icon></button>`;
     const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
       .map((n) => `<button class="rc-btn" data-act="wcmd|${n}">${n}</button>`).join("");
     return `
@@ -364,22 +358,22 @@ class TvRemoteCard extends HTMLElement {
     <button class="rc-btn" data-act="wsrc" title="${L.btn_source}"><ha-icon icon="mdi:hdmi-port"></ha-icon></button>
    </div>
    <div class="rc-grid3">
-    <span></span>${cmd("DPAD_UP", "mdi:chevron-up", "up", L.btn_up)}<span></span>
-    ${cmd("DPAD_LEFT", "mdi:chevron-left", "left", L.btn_left)}
-    <button class="rc-btn" data-act="wcmd|DPAD_CENTER" title="${L.btn_ok}">OK</button>
-    ${cmd("DPAD_RIGHT", "mdi:chevron-right", "right", L.btn_right)}
+    <span></span>${cmd("DPAD_UP", "mdi:chevron-up", "up", L.btn_up, "rc-nav")}<span></span>
+    ${cmd("DPAD_LEFT", "mdi:chevron-left", "left", L.btn_left, "rc-nav")}
+    <button class="rc-btn rc-nav" data-act="wcmd|DPAD_CENTER" title="${L.btn_ok}">OK</button>
+    ${cmd("DPAD_RIGHT", "mdi:chevron-right", "right", L.btn_right, "rc-nav")}
     ${cmd("BACK", "mdi:arrow-left", "back", L.btn_back)}
-    ${cmd("DPAD_DOWN", "mdi:chevron-down", "down", L.btn_down)}
+    ${cmd("DPAD_DOWN", "mdi:chevron-down", "down", L.btn_down, "rc-nav")}
     ${cmd("MENU", "mdi:menu", "menu", L.btn_menu)}
    </div>
    <div class="rc-row">
-    ${cmd("VOLUME_UP", "mdi:volume-plus", "volup", L.btn_vol_up)}
+    <button class="rc-btn" data-act="wvol|up" title="${L.btn_vol_up}"><ha-icon icon="mdi:volume-plus"></ha-icon></button>
     ${cmd("HOME", "mdi:home", "home", L.btn_home)}
     ${cmd("CHANNEL_UP", "mdi:arrow-up-bold-box-outline", "chup", L.btn_ch_up)}
    </div>
    <div class="rc-row">
-    ${cmd("VOLUME_DOWN", "mdi:volume-minus", "voldown", L.btn_vol_down)}
-    ${cmd("VOLUME_MUTE", "mdi:volume-mute", "mute", L.btn_mute)}
+    <button class="rc-btn" data-act="wvol|down" title="${L.btn_vol_down}"><ha-icon icon="mdi:volume-minus"></ha-icon></button>
+    <button class="rc-btn" data-act="wvol|mute" title="${L.btn_mute}"><ha-icon icon="mdi:volume-mute"></ha-icon></button>
     ${cmd("CHANNEL_DOWN", "mdi:arrow-down-bold-box-outline", "chdown", L.btn_ch_down)}
    </div>
    <div class="rc-row">
@@ -391,10 +385,6 @@ class TvRemoteCard extends HTMLElement {
     ${cmd("MEDIA_PREVIOUS", "mdi:restart", "restart", L.btn_restart)}
     ${cmd("MEDIA_RECORD", "mdi:record-rec", "rec", L.btn_rec)}
     ${cmd("MEDIA_NEXT", "mdi:skip-next", "next", L.btn_next)}
-   </div>
-   <div class="rc-pillrow">
-    <button class="rc-pill" data-act="wapp|waiputhek">${L.btn_waiputhek}</button>
-    <button class="rc-pill" data-act="wapp|netflix">${L.btn_netflix}</button>
    </div>
   </div>`;
   }
@@ -481,11 +471,24 @@ ${popup ? `<dialog class="pop" id="pop">
     // waipu.tv remote — see the mapping table in the header comment.
     if (act === "wpwr") return this._svc("remote", "toggle", { entity_id: c.waipu_remote });
     if (act === "wcmd") return this._svc("remote", "send_command", { entity_id: c.waipu_remote, command: a });
-    if (act === "wsrc") return this._svc("select", "select_option", { entity_id: c.hdmi_select, option: c.waipu_hdmi_option });
-    if (act === "wapp") {
-      const link = a === "netflix" ? c.netflix_link : c.waiputhek_link;
-      if (link) this._svc("remote", "turn_on", { entity_id: c.waipu_remote, activity: link });
+    if (act === "wvol") {
+      // Volume/mute are "TV basics" the physical remote controls directly on the TV
+      // (see the manual), not the Android TV OS — so they target a separately
+      // configurable media_player (soundbar/TV) when set, falling back to an
+      // Android TV Remote command on the box itself otherwise.
+      if (c.volume_player) {
+        if (a === "up") return this._svc("media_player", "volume_up", { entity_id: c.volume_player });
+        if (a === "down") return this._svc("media_player", "volume_down", { entity_id: c.volume_player });
+        if (a === "mute") {
+          const st = this._hass.states[c.volume_player];
+          const muted = !!(st && st.attributes.is_volume_muted);
+          return this._svc("media_player", "volume_mute", { entity_id: c.volume_player, is_volume_muted: !muted });
+        }
+      }
+      const cmdMap = { up: "VOLUME_UP", down: "VOLUME_DOWN", mute: "VOLUME_MUTE" };
+      return this._svc("remote", "send_command", { entity_id: c.waipu_remote, command: cmdMap[a] });
     }
+    if (act === "wsrc") return this._svc("select", "select_option", { entity_id: c.hdmi_select, option: c.waipu_hdmi_option });
   }
 
   _L() { return I18N[this._lang()] || I18N.de; }
@@ -532,12 +535,9 @@ ${popup ? `<dialog class="pop" id="pop">
     const c = this._cfg;
     const hasRemote = !!c.waipu_remote;
     this.shadowRoot.querySelectorAll('[data-act="wpwr"],[data-act^="wcmd|"]').forEach((b) => { b.disabled = !hasRemote; });
+    this.shadowRoot.querySelectorAll('[data-act^="wvol|"]').forEach((b) => { b.disabled = !(hasRemote || c.volume_player); });
     const srcBtn = this.shadowRoot.querySelector('[data-act="wsrc"]');
     if (srcBtn) srcBtn.disabled = !(c.hdmi_select && c.waipu_hdmi_option);
-    const netflixBtn = this.shadowRoot.querySelector('[data-act="wapp|netflix"]');
-    if (netflixBtn) netflixBtn.disabled = !(hasRemote && c.netflix_link);
-    const waiputhekBtn = this.shadowRoot.querySelector('[data-act="wapp|waiputhek"]');
-    if (waiputhekBtn) waiputhekBtn.disabled = !(hasRemote && c.waiputhek_link);
   }
 }
 
@@ -638,8 +638,7 @@ class TvRemoteCardEditor extends HTMLElement {
       media_player: L.e_media, tv_light_scene: L.e_tv_light,
       sync_power: L.e_sync_power, sync_button: L.e_sync_button, sync_state: L.e_sync_state,
       hdmi_select: L.e_hdmi_select, waipu_remote: L.e_waipu_remote,
-      waipu_hdmi_option: L.e_waipu_hdmi_option, netflix_link: L.e_netflix_link,
-      waiputhek_link: L.e_waiputhek_link,
+      waipu_hdmi_option: L.e_waipu_hdmi_option, volume_player: L.e_volume_player,
     }[s.name] || s.name);
     this._base.schema = [
       { name: "title", selector: { text: {} } },
@@ -657,9 +656,8 @@ class TvRemoteCardEditor extends HTMLElement {
       { name: "sync_state", selector: { entity: {} } },
       { name: "hdmi_select", selector: { entity: {} } },
       { name: "waipu_remote", selector: { entity: { domain: "remote" } } },
+      { name: "volume_player", selector: { entity: { domain: "media_player" } } },
       { name: "waipu_hdmi_option", selector: { text: {} } },
-      { name: "netflix_link", selector: { text: {} } },
-      { name: "waiputhek_link", selector: { text: {} } },
     ];
     this._base.data = this._config;
   }
