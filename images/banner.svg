@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#101a24"/>
+      <stop offset="100%" stop-color="#1c2b3a"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 42px 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; }
+      .subtitle { font: 400 18px 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #9fb4c7; }
+      .chip-text { font: 600 15px 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #e8f0f7; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="360" fill="url(#bg)"/>
+
+  <circle cx="1080" cy="70" r="110" fill="#4fc3f7" opacity="0.08"/>
+  <circle cx="120" cy="300" r="140" fill="#81c784" opacity="0.06"/>
+
+  <text x="60" y="90" class="title">HA Lovelace Cards</text>
+  <text x="60" y="124" class="subtitle">9 vanilla-JS custom cards for Home Assistant · bilingual DE / EN · popup, dropdown &amp; inline modes</text>
+
+  <g class="chip-text" text-anchor="middle">
+    <!-- Row 1 -->
+    <rect x="60"  y="160" width="200" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="160" y="189">Sternenprojektor</text>
+
+    <rect x="272" y="160" width="200" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="372" y="189">Wohnzimmer TV</text>
+
+    <rect x="484" y="160" width="220" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="594" y="189">Bewegungssensoren</text>
+
+    <rect x="716" y="160" width="220" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="826" y="189">AEG Waschtrockner</text>
+
+    <rect x="948" y="160" width="192" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="1044" y="189">Bosch Spülmaschine</text>
+
+    <!-- Row 2 -->
+    <rect x="60"  y="220" width="200" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="160" y="249">Roborock S7</text>
+
+    <rect x="272" y="220" width="200" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="372" y="249">Dreame H14 Pro</text>
+
+    <rect x="484" y="220" width="230" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="599" y="249">Rolladen-Automatik</text>
+
+    <rect x="726" y="220" width="200" height="46" rx="10" fill="#26394a" stroke="#3a5064"/>
+    <text x="826" y="249">Select Button</text>
+  </g>
+
+  <text x="60" y="320" class="subtitle" opacity="0.7">custom:star-projector-card · wz-tv-card · wz-motion-card · aeg-waschtrockner-card · bosch-dishwasher-card</text>
+  <text x="60" y="344" class="subtitle" opacity="0.7">roborock-s7-card · dreame-h14-card · shutter-automation-card · select-button-card</text>
+</svg>

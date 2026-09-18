@@ -1,5 +1,7 @@
 # HA Lovelace Cards (Ring)
 
+![HA Lovelace Cards banner](images/banner.svg)
+
 A small collection of **vanilla JavaScript** custom Lovelace cards for Home Assistant —
 no framework, no build tooling required to use them, each card self‑contained with its own
 shadow DOM and a graphical editor (`ha-form`).
@@ -48,11 +50,11 @@ This repository is **not** in the default HACS store, so you add it as a custom 
 
 1. In Home Assistant open **HACS**.
 2. Top‑right **⋮ → Custom repositories**.
-3. **Repository:** the URL of this repo, e.g. `https://github.com/<you>/ha-lovelace-cards`
+3. **Repository:** `https://github.com/ringind/ha-ringind-lovelace-cards`
    **Type / Category:** `Dashboard` (a.k.a. *Lovelace* / *plugin*).
    Click **Add**.
 4. Find **"HA Lovelace Cards (Ring)"** in the HACS list, open it, click **Download**, confirm.
-5. HACS copies the bundle to `config/www/community/ha-lovelace-cards/ha-lovelace-cards.js`
+5. HACS copies the bundle to `config/www/community/ha-ringind-lovelace-cards/ha-lovelace-cards.js`
    and, on a default (Storage/UI‑managed) dashboard setup, **registers the Lovelace resource
    for you**. If it does not (YAML‑mode dashboards), add it manually — see
    [*Register the resource*](#register-the-resource) below.
