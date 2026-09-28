@@ -252,17 +252,38 @@ const MACHINE_SVG = `
   <linearGradient id="h14b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f3f5"/><stop offset="1" stop-color="#c9ccd2"/></linearGradient>
   <clipPath id="h14tank"><rect x="80" y="104" width="40" height="70" rx="8"/></clipPath>
  </defs>
+ <!-- carry handle with trigger -->
  <path d="M150 12 q14 2 14 16 q0 10 -12 16 l-30 40" fill="none" stroke="#b9bdc4" stroke-width="12" stroke-linecap="round"/>
  <rect x="140" y="6" width="26" height="16" rx="8" fill="#33373d"/>
+ <path d="M126 44 q9 5 5 15" fill="none" stroke="#e2453b" stroke-width="6" stroke-linecap="round"/>
+ <!-- neck joining handle to housing -->
+ <rect x="116" y="78" width="9" height="18" fill="#9aa0a8"/>
+ <!-- LED control panel -->
+ <rect x="86" y="80" width="26" height="12" rx="6" fill="#1b1e22"/>
+ <circle cx="93" cy="86" r="2.6" fill="#22c55e"/>
+ <!-- main tank housing -->
  <rect x="72" y="92" width="56" height="96" rx="14" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
+ <!-- clean-water reservoir strip along the side -->
+ <rect x="72" y="96" width="9" height="88" rx="4.5" fill="rgba(0,0,0,0.08)"/>
  <rect x="80" y="104" width="40" height="70" rx="8" fill="#0d1013"/>
  <g clip-path="url(#h14tank)">
   <rect id="water" x="80" y="150" width="40" height="24" fill="#2f7ff0" fill-opacity="0.55"/>
  </g>
  <rect x="80" y="104" width="40" height="70" rx="8" fill="none" stroke="#3a3e44" stroke-width="2"/>
+ <circle cx="100" cy="112" r="4.5" fill="none" stroke="#565b62" stroke-width="2"/><!-- fill cap -->
  <path d="M92 186 l-14 22 h44 l-14 -22Z" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
  <rect x="46" y="204" width="108" height="30" rx="9" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
- <ellipse id="roller" cx="100" cy="234" rx="50" ry="8" fill="#6b7078"/>
+ <!-- casters -->
+ <circle cx="56" cy="233" r="5" fill="#8b8f97"/><circle cx="144" cy="233" r="5" fill="#8b8f97"/>
+ <!-- roller brush (textured so the spin animation is visible) -->
+ <g id="roller">
+  <ellipse cx="100" cy="234" rx="50" ry="8" fill="#6b7078"/>
+  <g stroke="#4d5158" stroke-width="1.3" stroke-linecap="round">
+   <line x1="60" y1="228" x2="63" y2="240"/><line x1="72" y1="227" x2="75" y2="241"/><line x1="84" y1="226" x2="87" y2="242"/>
+   <line x1="96" y1="226" x2="99" y2="242"/><line x1="104" y1="226" x2="107" y2="242"/><line x1="116" y1="227" x2="119" y2="241"/>
+   <line x1="128" y1="228" x2="131" y2="240"/><line x1="138" y1="229" x2="141" y2="239"/>
+  </g>
+ </g>
  <g id="dry" fill="none" stroke="#ffb020" stroke-width="3" stroke-linecap="round" stroke-opacity="0.85">
   <path d="M60 216 q-8 -8 0 -16"/><path d="M100 220 q-8 -8 0 -16"/><path d="M140 216 q-8 -8 0 -16"/>
  </g>

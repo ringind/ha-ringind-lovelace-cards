@@ -562,6 +562,10 @@ class TvRemoteCardEditor extends HTMLElement {
   _list(key, title, itemSchema, mkNew) {
     const L = this._L();
     const items = Array.isArray(this._config[key]) ? this._config[key] : [];
+    // Read the *current* array at event time, not this closure's snapshot — config-changed
+    // round-trips through setConfig() without a DOM rebuild (count unchanged), so a stale
+    // `items` reference here would make each edit clobber any other edit made since render.
+    const cur = () => Array.isArray(this._config[key]) ? this._config[key] : items;
     const wrap = document.createElement("div");
     wrap.style.cssText = "margin:14px 0 4px";
     const h = document.createElement("div");
@@ -580,7 +584,7 @@ class TvRemoteCardEditor extends HTMLElement {
         label: L.e_label, icon: L.e_icon, path: L.e_path, option: L.e_option, entity: L.e_entity,
       }[s.name] || s.name);
       f.addEventListener("value-changed", (ev) => {
-        const next = items.slice(); next[idx] = ev.detail.value;
+        const next = cur().slice(); next[idx] = ev.detail.value;
         this._emit(Object.assign({}, this._config, { [key]: next }));
       });
       rowEl.appendChild(f);
@@ -588,7 +592,7 @@ class TvRemoteCardEditor extends HTMLElement {
       del.style.cssText = "--mdc-icon-button-size:36px;margin-top:2px";
       del.innerHTML = '<ha-icon icon="mdi:delete"></ha-icon>';
       del.addEventListener("click", () => {
-        const next = items.slice(); next.splice(idx, 1);
+        const next = cur().slice(); next.splice(idx, 1);
         this._emit(Object.assign({}, this._config, { [key]: next }));
       });
       rowEl.appendChild(del);
@@ -599,7 +603,7 @@ class TvRemoteCardEditor extends HTMLElement {
       add.setAttribute("outlined", "");
       add.textContent = "+ " + L.e_add;
       add.addEventListener("click", () => {
-        this._emit(Object.assign({}, this._config, { [key]: items.concat([mkNew()]) }));
+        this._emit(Object.assign({}, this._config, { [key]: cur().concat([mkNew()]) }));
       });
       wrap.appendChild(add);
     }

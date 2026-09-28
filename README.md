@@ -14,7 +14,7 @@ Every card exposes its entities as config options for exactly that reason.
 |---|---|---|
 | `custom:star-projector-card` | Sternenprojektor | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
 | `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, 1–4 remote‑subview shortcuts, 1–4 HDMI‑input chips, Hue Play Sync Box (with a labelled **Sync** button), 1–4 Sonos sound toggles (night‑sound / speech‑enhancement / …), TV‑light scene. Popup or dropdown. |
-| `custom:wz-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup or dropdown. |
+| `custom:rd-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list (up to 20, no default entities) of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup or dropdown. |
 | `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Popup or dropdown. |
 | `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Popup or dropdown. |
 | `custom:roborock-s7-card` | Roborock S7 MaxV | Live map image, start/pause/stop/dock/locate, **area cleaning** via `vacuum.clean_area`, fan speed, mop settings, status & lifetime stats. Popup or dropdown. |
@@ -158,24 +158,24 @@ Plus the [common options](#common-options-all-cards). Power runs through the `me
 chips call `select.select_option` on `hdmi_select`; `ton` toggles switch on the entity's own
 domain. Each list is 1–4 items, edited inline in the visual editor.
 
-### `custom:wz-motion-card`
+### `custom:rd-motion-card`
 
 ```yaml
-type: custom:wz-motion-card
-title: Bewegungssensoren WZ
-mode: popup                                    # popup | dropdown
+type: custom:rd-motion-card
+title: Bewegungssensoren
+mode: popup                                    # popup | dropdown | inline
 language: auto                                 # auto | de | en
-master: input_boolean.wz_motion_state         # header power button
-aggregate: binary_sensor.livingdining_motion  # drives the status banner + header glow
-sources:                                       # add/remove in the visual editor (1–8)
-  - { name: Spülbecken,  motion: binary_sensor.hue_motion_spulbecken_motion, enable: switch.hue_motion_spulbecken_motion }
-  - { name: Küchentheke, motion: binary_sensor.hue_motion_wohnzimmer_motion, enable: switch.hue_motion_wohnzimmer_motion }
-  - { name: FP2 Präsenz, motion: binary_sensor.wz_fp2_presence,              enable: automation.wohn_esszimmer_yama_fp2_wz }
+master: input_boolean.some_motion_state       # header power button
+aggregate: binary_sensor.some_aggregate_motion # drives the status banner + header glow
+sources:                                       # add/remove in the visual editor (up to 20)
+  - { name: Sensor 1, motion: binary_sensor.some_motion, enable: switch.some_motion_enable }
 ```
 
-Plus the [common options](#common-options-all-cards). The motion sources are an add/remove
-list in the visual editor. Each source's `enable` may be a `switch` **or** an `automation` —
-the toggle picks the service from the entity's domain.
+Plus the [common options](#common-options-all-cards). This card ships with **no default
+entities** — `master`, `aggregate` and every source start blank and must be set in the
+visual editor. The motion sources are an add/remove list (up to 20) in the visual editor.
+Each source's `enable` may be a `switch` **or** an `automation` — the toggle picks the
+service from the entity's domain.
 
 ### `custom:aeg-waschtrockner-card`
 

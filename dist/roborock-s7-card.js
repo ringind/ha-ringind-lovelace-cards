@@ -60,6 +60,7 @@ ha-card{padding:14px 14px 10px;overflow:hidden}
 .chip ha-icon{--mdc-icon-size:16px;color:var(--secondary-text-color)}
 .chip.on ha-icon{color:var(--acc)}
 .pres{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--divider-color);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--secondary-text-color)}
+.pres[hidden]{display:none}
 .pres b{width:8px;height:8px;border-radius:50%;background:var(--disabled-text-color)}
 .pres b.on{background:#22c55e}
 .stat{display:flex;align-items:center;gap:8px;padding:8px 2px;font-size:12.5px;color:var(--primary-text-color);border-bottom:1px solid var(--divider-color);cursor:pointer}

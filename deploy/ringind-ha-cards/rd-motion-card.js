@@ -7,25 +7,78 @@
  * button). The toggle target may be a switch OR an automation — the service
  * domain is derived from the entity_id.
  *
- * The list of sources is fully editable in the visual editor (add / remove, up
- * to 8), as are the master + aggregate entities.
+ * No default entities ship with this card — master, aggregate and every source
+ * are blank until configured. The list of sources is fully editable in the
+ * visual editor (add / remove, up to 20), as are the master + aggregate entities.
  *
  * config:
- *   type: custom:wz-motion-card
- *   title: "Bewegungssensoren WZ"
+ *   type: custom:rd-motion-card
+ *   title: "Bewegungssensoren"
  *   mode: popup                 # "popup" (default) | "dropdown" | "inline"
  *   language: auto              # "auto" | "de" | "en"
- *   master: input_boolean.wz_motion_state
- *   aggregate: binary_sensor.livingdining_motion
+ *   master: input_boolean.some_motion_state
+ *   aggregate: binary_sensor.some_aggregate_motion
  *   sources:
  *     - { name, motion, enable }   # motion = binary_sensor, enable = switch or automation
  */
 
 // User-facing strings live in localization/{de,en}.js (one entry per card type).
 // `npm run build` inlines the slice for this card; the imports are the source of truth.
-import DE from "../localization/de.js";
-import EN from "../localization/en.js";
-const I18N = { de: DE["wz-motion-card"], en: EN["wz-motion-card"] };
+const DE = { "rd-motion-card": {
+  title: "Bewegungssensoren",
+  active: "Aktiv",
+  off: "Aus",
+  calm: "Ruhe",
+  detected: "Bewegung erkannt",
+  settings: "Sensoren",
+  expand: "Ein-/Ausklappen",
+  power: "Bewegungssteuerung ein/aus",
+  close: "Schließen",
+  e_title: "Titel",
+  e_mode: "Anzeige",
+  e_language: "Sprache",
+  e_popup: "Popup",
+  e_dropdown: "Ausklappen (Dropdown)",
+  e_inline: "Inline (immer sichtbar)",
+  e_auto: "Automatisch (HA)",
+  e_de: "Deutsch",
+  e_en: "Englisch",
+  e_master: "Master-Status (input_boolean)",
+  e_aggregate: "Gesamt-Bewegung (binary_sensor)",
+  e_sources: "Bewegungsmelder",
+  e_name: "Name",
+  e_motion: "Bewegungs-Sensor (binary_sensor)",
+  e_enable: "Aktivieren (switch / automation)",
+  e_add: "Sensor hinzufügen"
+} };
+const EN = { "rd-motion-card": {
+  title: "Motion sensors",
+  active: "Active",
+  off: "Off",
+  calm: "Calm",
+  detected: "Motion detected",
+  settings: "Sensors",
+  expand: "Expand / collapse",
+  power: "Motion control on/off",
+  close: "Close",
+  e_title: "Title",
+  e_mode: "Display",
+  e_language: "Language",
+  e_popup: "Popup",
+  e_dropdown: "Dropdown",
+  e_inline: "Inline (always shown)",
+  e_auto: "Automatic (HA)",
+  e_de: "German",
+  e_en: "English",
+  e_master: "Master state (input_boolean)",
+  e_aggregate: "Aggregate motion (binary_sensor)",
+  e_sources: "Motion sources",
+  e_name: "Name",
+  e_motion: "Motion sensor (binary_sensor)",
+  e_enable: "Enable (switch / automation)",
+  e_add: "Add sensor"
+} };
+const I18N = { de: DE["rd-motion-card"], en: EN["rd-motion-card"] };
 
 const STYLE = `
 :host{--acc:#f0a020;--live:#ffb023;--armed:#3ec46d;display:block}
@@ -79,18 +132,16 @@ dialog.pop::backdrop{background:transparent}
 const DEFAULTS = {
   mode: "popup",
   language: "auto",
-  master: "input_boolean.wz_motion_state",
-  aggregate: "binary_sensor.livingdining_motion",
+  master: "",
+  aggregate: "",
   sources: [
-    { name: "Spülbecken", motion: "binary_sensor.hue_motion_spulbecken_motion", enable: "switch.hue_motion_spulbecken_motion" },
-    { name: "Küchentheke", motion: "binary_sensor.hue_motion_wohnzimmer_motion", enable: "switch.hue_motion_wohnzimmer_motion" },
-    { name: "FP2 Präsenz", motion: "binary_sensor.wz_fp2_presence", enable: "automation.wohn_esszimmer_yama_fp2_wz" },
+    { name: "", motion: "", enable: "" },
   ],
 };
 
-class WzMotionCard extends HTMLElement {
-  static getStubConfig() { return { master: "input_boolean.wz_motion_state" }; }
-  static getConfigElement() { return document.createElement("wz-motion-card-editor"); }
+class RdMotionCard extends HTMLElement {
+  static getStubConfig() { return { sources: [{ name: "", motion: "", enable: "" }] }; }
+  static getConfigElement() { return document.createElement("rd-motion-card-editor"); }
 
   setConfig(c) {
     const prevSig = this._sig;
@@ -254,7 +305,7 @@ ${popup ? `<dialog class="pop" id="pop">
 }
 
 /* ---- visual editor: base fields + add/remove list of motion sources ---- */
-class WzMotionCardEditor extends HTMLElement {
+class RdMotionCardEditor extends HTMLElement {
   setConfig(config) {
     const sig = [config.mode, config.language, (config.sources || []).length].join("|");
     this._config = config;
@@ -281,6 +332,10 @@ class WzMotionCardEditor extends HTMLElement {
       this.appendChild(this._base);
 
       const items = Array.isArray(this._config.sources) ? this._config.sources : [];
+      // Read the *current* sources at event time, not this closure's snapshot — config-changed
+      // round-trips through setConfig() without a DOM rebuild (count unchanged), so a stale
+      // `items` reference here would make each edit clobber any other edit made since render.
+      const cur = () => Array.isArray(this._config.sources) ? this._config.sources : items;
       const wrap = document.createElement("div");
       wrap.style.cssText = "margin:14px 0 4px";
       const h = document.createElement("div");
@@ -301,7 +356,7 @@ class WzMotionCardEditor extends HTMLElement {
         f.data = item;
         f.computeLabel = (s) => ({ name: L.e_name, motion: L.e_motion, enable: L.e_enable }[s.name] || s.name);
         f.addEventListener("value-changed", (ev) => {
-          const next = items.slice(); next[idx] = ev.detail.value;
+          const next = cur().slice(); next[idx] = ev.detail.value;
           this._emit(Object.assign({}, this._config, { sources: next }));
         });
         rowEl.appendChild(f);
@@ -310,20 +365,21 @@ class WzMotionCardEditor extends HTMLElement {
         del.disabled = items.length <= 1;
         del.innerHTML = '<ha-icon icon="mdi:delete"></ha-icon>';
         del.addEventListener("click", () => {
-          if (items.length <= 1) return;
-          const next = items.slice(); next.splice(idx, 1);
+          const c = cur();
+          if (c.length <= 1) return;
+          const next = c.slice(); next.splice(idx, 1);
           this._emit(Object.assign({}, this._config, { sources: next }));
         });
         rowEl.appendChild(del);
         wrap.appendChild(rowEl);
       });
-      if (items.length < 8) {
+      if (items.length < 20) {
         const add = document.createElement("mwc-button");
         add.setAttribute("outlined", "");
         add.textContent = "+ " + L.e_add;
         add.addEventListener("click", () => {
           this._emit(Object.assign({}, this._config, {
-            sources: items.concat([{ name: "", motion: "", enable: "" }]),
+            sources: cur().concat([{ name: "", motion: "", enable: "" }]),
           }));
         });
         wrap.appendChild(add);
@@ -350,13 +406,13 @@ class WzMotionCardEditor extends HTMLElement {
     this._base.data = this._config;
   }
 }
-customElements.define("wz-motion-card-editor", WzMotionCardEditor);
+customElements.define("rd-motion-card-editor", RdMotionCardEditor);
 
-customElements.define("wz-motion-card", WzMotionCard);
+customElements.define("rd-motion-card", RdMotionCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "wz-motion-card",
+  type: "rd-motion-card",
   name: "Motion sensors",
-  description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown/inline, DE/EN, editable list.",
+  description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown/inline, DE/EN, editable list, no default entities.",
   preview: false,
 });

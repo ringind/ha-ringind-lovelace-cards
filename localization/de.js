@@ -302,7 +302,7 @@ export default {
     e_rotation: "Rotationsgeschwindigkeit",
     e_timer: "Sleep-Timer",
   },
-  "wz-motion-card": {
+  "rd-motion-card": {
     title: "Bewegungssensoren",
     active: "Aktiv",
     off: "Aus",
