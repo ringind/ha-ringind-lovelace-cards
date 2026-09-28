@@ -1,11 +1,13 @@
 # HA Lovelace Cards (Ring)
 
-Nine vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
+Ten vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
 
 - **`custom:star-projector-card`** – smart star projector; controls as a modal popup
   or an inline dropdown (`mode`), every entity a selectable editor field.
 - **`custom:wz-tv-card`** – compact TV hub (power, 1–4 remotes, 1–4 HDMI chips, Hue Sync Box
   with a labelled Sync button, 1–4 Sonos sound toggles).
+- **`custom:tv-remote-card`** – config-only fork of `wz-tv-card` with no pre-filled entities
+  plus a built-in on-screen replica of the physical waipu.tv Android TV remote.
 - **`custom:rd-motion-card`** – motion/presence panel with an add/remove list (up to 20, no
   default entities) of per‑sensor live dot + enable toggle.
 - **`custom:aeg-waschtrockner-card`** – AEG 9000 washer‑dryer (`electrolux_status`).
@@ -18,8 +20,8 @@ Nine vanilla‑JS custom Lovelace cards (no framework, each with a visual editor
   a `select` entity; the icon lights up while that option is active.
 
 Every card takes `language` (`auto` / `de` / `en`); all but `select-button-card` also take
-`mode` (`popup` / `dropdown`). UI text is bilingual German/English; `auto` follows the HA UI
-language.
+`mode` (`popup` / `dropdown` / `inline`). UI text is bilingual German/English; `auto` follows
+the HA UI language.
 
 **These cards ship with default entity IDs from one specific setup — change them in each
 card's editor.** After download, hard‑refresh the browser and add the cards from the picker.

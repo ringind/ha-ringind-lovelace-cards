@@ -12,14 +12,15 @@ Every card exposes its entities as config options for exactly that reason.
 
 | `type:` | Card | What it does |
 |---|---|---|
-| `custom:star-projector-card` | Sternenprojektor | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls either in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible) or as an inline **dropdown**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
-| `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, 1–4 remote‑subview shortcuts, 1–4 HDMI‑input chips, Hue Play Sync Box (with a labelled **Sync** button), 1–4 Sonos sound toggles (night‑sound / speech‑enhancement / …), TV‑light scene. Popup or dropdown. |
-| `custom:rd-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list (up to 20, no default entities) of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup or dropdown. |
-| `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Popup or dropdown. |
-| `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Popup or dropdown. |
-| `custom:roborock-s7-card` | Roborock S7 MaxV | Live map image, start/pause/stop/dock/locate, **area cleaning** via `vacuum.clean_area`, fan speed, mop settings, status & lifetime stats. Popup or dropdown. |
-| `custom:dreame-h14-card` | Dreame H14 Pro | Hand‑pushed wet/dry vacuum — tank/consumable alerts, the two dock actions, suction/water/brush levels, wear counters. Popup or dropdown. |
-| `custom:shutter-automation-card` | Rolladen‑Automatik | Sun/azimuth/temperature/brightness shading automation — status, editable close/open thresholds, manual close/open scripts, optional horizon‑card info block. Popup or dropdown. |
+| `custom:star-projector-card` | Sternenprojektor | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible), an inline expand/collapse **dropdown**, or permanently **inline**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
+| `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, 1–4 remote‑subview shortcuts, 1–4 HDMI‑input chips, Hue Play Sync Box (with a labelled **Sync** button), 1–4 Sonos sound toggles (night‑sound / speech‑enhancement / …), TV‑light scene. Popup, dropdown, or inline. |
+| `custom:tv-remote-card` | Fernbedienung | Config‑only fork of `wz-tv-card` — no pre‑filled entities/labels/icons anywhere, plus a built‑in on‑screen replica of the physical waipu.tv Android TV remote (D‑pad, numeric keypad, volume, playback, …) targeting one `remote.*` entity. Popup, dropdown, or inline. |
+| `custom:rd-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list (up to 20, no default entities) of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup, dropdown, or inline. |
+| `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Popup, dropdown, or inline. |
+| `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Popup, dropdown, or inline. |
+| `custom:roborock-s7-card` | Roborock S7 MaxV | Live map image, start/pause/stop/dock/locate, **area cleaning** via `vacuum.clean_area`, fan speed, mop settings, status & lifetime stats. Popup, dropdown, or inline. |
+| `custom:dreame-h14-card` | Dreame H14 Pro | Hand‑pushed wet/dry vacuum — tank/consumable alerts, the two dock actions, suction/water/brush levels, wear counters. Popup, dropdown, or inline. |
+| `custom:shutter-automation-card` | Rolladen‑Automatik | Sun/azimuth/temperature/brightness shading automation — status, editable close/open thresholds, manual close/open scripts, optional horizon‑card info block. Popup, dropdown, or inline. |
 | `custom:select-button-card` | Select Button | Tile‑style **push button**: tapping the whole card selects one fixed `option` of a `select` entity (`select.select_option`); the round icon badge lights up in the active colour while that option is the one currently selected. Hold = more‑info. No popup/dropdown — it *is* a button. |
 
 Code comments are English. User‑facing text is bilingual: every card takes a
@@ -30,7 +31,7 @@ language and falls back to German.
 
 | Option | Default | Notes |
 |---|---|---|
-| `mode` | `popup` | `popup` = controls open in a modal `<dialog>` scaled/styled like HA's more‑info dialog (desktop ≈ `min(520px, 100vw−32px)`, 28 px radius, rem typography; full‑screen on small viewports; overlay **always transparent** so the dashboard stays visible). `dropdown` = inline expand/collapse under the header via a chevron. Editor field: **Anzeige / Display**. |
+| `mode` | `popup` | `popup` = controls open in a modal `<dialog>` scaled/styled like HA's more‑info dialog (desktop ≈ `min(520px, 100vw−32px)`, 28 px radius, rem typography; full‑screen on small viewports; overlay **always transparent** so the dashboard stays visible). `dropdown` = inline expand/collapse under the header via a chevron. `inline` = the controls are always shown in the card, no toggle button. Editor field: **Anzeige / Display**. |
 | `language` | `auto` | `auto` → HA UI language (German fallback), or force `de` / `en`. Editor field: **Sprache / Language**. |
 | `title` | per card | Header label (and popup title in `popup` mode). |
 
@@ -106,7 +107,7 @@ examples below — open the card's editor to point every entity at your own.
 ```yaml
 type: custom:star-projector-card
 title: Sternenprojektor
-mode: popup                # "popup" (default) or "dropdown"
+mode: popup                # "popup" (default) | "dropdown" | "inline"
 language: auto             # auto | de | en
 power: switch.smart_star_projector_master
 nebula: light.smart_star_projector_background
@@ -134,7 +135,7 @@ expands them inline. The editor presents each entity as its own picker (no prefi
 ```yaml
 type: custom:wz-tv-card
 title: Fernseher
-mode: popup            # popup | dropdown
+mode: popup            # popup | dropdown | inline
 language: auto         # auto | de | en
 media_player: media_player.samsungtv
 tv_light_scene: scene.wz_alle_fernsehlicht
@@ -157,6 +158,42 @@ Plus the [common options](#common-options-all-cards). Power runs through the `me
 (`media_player.toggle`). `remotes` entries navigate to existing dashboard views; `hdmi`
 chips call `select.select_option` on `hdmi_select`; `ton` toggles switch on the entity's own
 domain. Each list is 1–4 items, edited inline in the visual editor.
+
+### `custom:tv-remote-card`
+
+A config-only fork of `wz-tv-card`: no pre-filled entity IDs, labels, icons or paths
+anywhere — every field starts empty and is set entirely through the visual editor, and
+`remotes`/`hdmi`/`ton` start at 0 items instead of 1–4 example rows. Adds a built-in
+"waipu.tv remote" section — a fixed-layout on-screen replica of the physical waipu.tv
+Android TV remote (power, mic, numeric keypad, guide, D-pad, home, mute, volume,
+playback, …) that sends Android TV Remote commands to one `remote.*` entity.
+
+```yaml
+type: custom:tv-remote-card
+title: Fernseher
+mode: popup                       # "popup" (default) | "dropdown" | "inline"
+language: auto                    # auto | de | en
+media_player: media_player.xxx
+tv_light_scene: scene.xxx
+sync_power: switch.xxx
+sync_button: input_button.xxx
+sync_state: switch.xxx
+hdmi_select: select.xxx
+waipu_remote: remote.xxx          # Android TV Remote integration entity
+volume_player: media_player.xxx   # optional — Vol+/Vol-/Mute target a TV/soundbar media_player
+                                   # here instead of the box's Android TV Remote entity (the
+                                   # physical remote controls the TV's volume directly, not the
+                                   # box); falls back to remote.send_command when unset.
+waipu_hdmi_option: "waipu.tv"     # option string on hdmi_select for the "Quelle" button
+remotes: []                       # 0–4, add/remove in the visual editor
+hdmi: []                          # 0–4, add/remove in the visual editor
+ton: []                           # 0–4, add/remove in the visual editor
+```
+
+Plus the [common options](#common-options-all-cards). Two remote buttons have no exact
+1:1 Android TV Remote equivalent and are a documented best effort: "Letzter Sender" sends
+the raw Android keycode 229 (`KEYCODE_LAST_CHANNEL`), and "Von Beginn starten" sends
+`MEDIA_PREVIOUS`, the closest standard media semantic.
 
 ### `custom:rd-motion-card`
 
@@ -246,6 +283,41 @@ title: Dreame H14 Pro    # optional
 Plus the [common options](#common-options-all-cards). All entities derive from `prefix`
 (`<domain>.<prefix>_<suffix>`). This is a hand‑pushed floor washer — the card has no
 autonomous run, only the two dock actions (`*_start_self_cleaning`, `*_start_self_drying`).
+
+### `custom:shutter-automation-card`
+
+Reusable for any side of the house (east/south/…) — every entity is picked explicitly in
+the editor, nothing is hardcoded or defaulted.
+
+```yaml
+type: custom:shutter-automation-card
+title: "Automatik Ostseite"                 # optional; falls back to a translated default
+mode: popup                                 # "popup" (default) | "dropdown" | "inline"
+language: auto                              # "auto" | "de" | "en"
+automation_active:  input_boolean....
+opening_active:     input_boolean....
+close_azimuth:      input_number....
+close_temp:         input_number....
+close_brightness:   input_number....
+open_azimuth:       input_number....
+open_elevation:     input_number....
+open_brightness:    input_number....
+close_script:       script....
+open_script:        script....
+sun_entity:          sun.sun                # optional — shows the horizon-card + live az/el values
+brightness_sensor:  sensor....               # optional info readouts
+temperature_sensor: sensor....
+wind_sensor:        sensor....
+weather_entity:     weather....
+```
+
+Plus the [common options](#common-options-all-cards). The collapsed (and always-visible)
+row is the automation on/off switch, the auto-opening on/off switch, and the close/open
+shutter buttons. Opening the header/expander reveals the "Schliessen, wenn" / "Öffnen,
+wenn" threshold workflow (live +/- steppers, no hardcoded min/max/step — read from each
+`input_number`, with the current live value shown alongside each threshold) plus an info
+column embedding the same `custom:horizon-card` the original subview used, and optional
+outdoor sensor/weather readouts.
 
 ### `custom:select-button-card`
 
