@@ -249,48 +249,63 @@ const I18N = { de: DE["dreame-h14-card"], en: EN["dreame-h14-card"] };
 const MACHINE_SVG = `
 <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dreame H14 Pro Wischsauger">
  <defs>
-  <linearGradient id="h14b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f3f5"/><stop offset="1" stop-color="#c9ccd2"/></linearGradient>
-  <clipPath id="h14tank"><rect x="80" y="104" width="40" height="70" rx="8"/></clipPath>
+  <linearGradient id="h14b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef0f2"/><stop offset="1" stop-color="#c2c6cc"/></linearGradient>
+  <linearGradient id="h14pole" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d8dbdf"/><stop offset=".5" stop-color="#f4f5f7"/><stop offset="1" stop-color="#aeb2b9"/></linearGradient>
+  <clipPath id="h14tank"><rect x="74" y="162" width="52" height="44" rx="8"/></clipPath>
  </defs>
- <!-- carry handle with trigger -->
- <path d="M150 12 q14 2 14 16 q0 10 -12 16 l-30 40" fill="none" stroke="#b9bdc4" stroke-width="12" stroke-linecap="round"/>
- <rect x="140" y="6" width="26" height="16" rx="8" fill="#33373d"/>
- <path d="M126 44 q9 5 5 15" fill="none" stroke="#e2453b" stroke-width="6" stroke-linecap="round"/>
- <!-- neck joining handle to housing -->
- <rect x="116" y="78" width="9" height="18" fill="#9aa0a8"/>
- <!-- LED control panel -->
- <rect x="86" y="80" width="26" height="12" rx="6" fill="#1b1e22"/>
- <circle cx="93" cy="86" r="2.6" fill="#22c55e"/>
+ <!-- D-handle: silver spine (inner edge) -->
+ <path d="M104 74 L116 32" fill="none" stroke="url(#h14pole)" stroke-width="7.5" stroke-linecap="round"/>
+ <!-- D-handle: black rubberized loop (outer edge) -->
+ <path d="M116 32 C 100 22, 84 24, 82 38 C 80 52, 86 64, 96 74"
+   fill="none" stroke="#2b2e33" stroke-width="10" stroke-linecap="round"/>
+ <!-- top cap + status LED -->
+ <circle cx="117" cy="29" r="4.5" fill="#3a3e44"/>
+ <circle cx="115" cy="27" r="1.8" fill="#e2453b"/>
+ <!-- wand (tapered pole) -->
+ <path d="M96 74 L104 72 L110 114 L90 114 Z" fill="url(#h14pole)" stroke="#9aa0a8" stroke-width="1.2"/>
+ <line x1="100" y1="80" x2="98.5" y2="112" stroke="#8b8f97" stroke-width="1"/>
  <!-- main tank housing -->
- <rect x="72" y="92" width="56" height="96" rx="14" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
- <!-- clean-water reservoir strip along the side -->
- <rect x="72" y="96" width="9" height="88" rx="4.5" fill="rgba(0,0,0,0.08)"/>
- <rect x="80" y="104" width="40" height="70" rx="8" fill="#0d1013"/>
+ <rect x="68" y="114" width="64" height="96" rx="16" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
+ <!-- self-clean button -->
+ <rect x="92" y="126" width="16" height="14" rx="4" fill="#14171b" stroke="#5c6067" stroke-width="1.2"/>
+ <path d="M100 130.5 c-2.2 1.8 -2.2 4.4 0 6 c2.2 -1.6 2.2 -4.2 0 -6Z" fill="none" stroke="#8f949c" stroke-width="1.1"/>
+ <!-- LED status pill -->
+ <rect x="90" y="145" width="20" height="6" rx="3" fill="#14171b"/>
+ <line x1="93" y1="148" x2="107" y2="148" stroke="#e2453b" stroke-width="1.5" stroke-linecap="round"/>
+ <!-- translucent tank -->
+ <rect x="74" y="162" width="52" height="44" rx="8" fill="#22262b" fill-opacity="0.85"/>
  <g clip-path="url(#h14tank)">
-  <rect id="water" x="80" y="150" width="40" height="24" fill="#2f7ff0" fill-opacity="0.55"/>
+  <rect id="water" x="74" y="184" width="52" height="22" fill="#2f7ff0" fill-opacity="0.5"/>
  </g>
- <rect x="80" y="104" width="40" height="70" rx="8" fill="none" stroke="#3a3e44" stroke-width="2"/>
- <circle cx="100" cy="112" r="4.5" fill="none" stroke="#565b62" stroke-width="2"/><!-- fill cap -->
- <path d="M92 186 l-14 22 h44 l-14 -22Z" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
- <rect x="46" y="204" width="108" height="30" rx="9" fill="url(#h14b)" stroke="#a9adb4" stroke-width="2"/>
- <!-- casters -->
- <circle cx="56" cy="233" r="5" fill="#8b8f97"/><circle cx="144" cy="233" r="5" fill="#8b8f97"/>
- <!-- roller brush (textured so the spin animation is visible) -->
+ <!-- carry-tab visible through the translucent tank -->
+ <path d="M78 172 L94 172 L88 190 L78 190 Z" fill="#7d838c" fill-opacity="0.3"/>
+ <rect x="74" y="162" width="52" height="44" rx="8" fill="none" stroke="#3a3e44" stroke-width="1.6"/>
+ <!-- neck / swivel -->
+ <path d="M84 210 L76 222 H124 L116 210 Z" fill="url(#h14b)" stroke="#a9adb4" stroke-width="1.6"/>
+ <circle cx="100" cy="216" r="6.5" fill="#8b8f97"/>
+ <!-- nozzle head -->
+ <rect x="34" y="224" width="132" height="20" rx="10" fill="#22262b" stroke="#3a3e44" stroke-width="1.4"/>
+ <circle cx="43" cy="240" r="5" fill="#6b7078"/><circle cx="157" cy="240" r="5" fill="#6b7078"/>
+ <!-- roller brush (mottled fabric texture; textured so the spin animation is visible) -->
  <g id="roller">
-  <ellipse cx="100" cy="234" rx="50" ry="8" fill="#6b7078"/>
-  <g stroke="#4d5158" stroke-width="1.3" stroke-linecap="round">
-   <line x1="60" y1="228" x2="63" y2="240"/><line x1="72" y1="227" x2="75" y2="241"/><line x1="84" y1="226" x2="87" y2="242"/>
-   <line x1="96" y1="226" x2="99" y2="242"/><line x1="104" y1="226" x2="107" y2="242"/><line x1="116" y1="227" x2="119" y2="241"/>
-   <line x1="128" y1="228" x2="131" y2="240"/><line x1="138" y1="229" x2="141" y2="239"/>
+  <ellipse cx="102" cy="244" rx="60" ry="9" fill="#c9cbce"/>
+  <g fill="#9a9ca0" opacity="0.55">
+   <circle cx="52" cy="240" r="1"/><circle cx="60" cy="246" r="1"/><circle cx="68" cy="241" r="1"/><circle cx="76" cy="247" r="1"/>
+   <circle cx="84" cy="240" r="1"/><circle cx="92" cy="246" r="1"/><circle cx="100" cy="241" r="1"/><circle cx="108" cy="247" r="1"/>
+   <circle cx="116" cy="240" r="1"/><circle cx="124" cy="246" r="1"/><circle cx="132" cy="241" r="1"/><circle cx="140" cy="247" r="1"/>
+   <circle cx="148" cy="240" r="1"/><circle cx="56" cy="243" r="1"/><circle cx="72" cy="244" r="1"/><circle cx="88" cy="243" r="1"/>
+   <circle cx="104" cy="244" r="1"/><circle cx="120" cy="243" r="1"/><circle cx="136" cy="244" r="1"/><circle cx="152" cy="243" r="1"/>
   </g>
+  <rect x="140" y="238" width="4" height="12" fill="#e2453b"/>
+  <rect x="144" y="239" width="10" height="10" rx="4" fill="#e9ebee"/>
  </g>
  <g id="dry" fill="none" stroke="#ffb020" stroke-width="3" stroke-linecap="round" stroke-opacity="0.85">
   <path d="M60 216 q-8 -8 0 -16"/><path d="M100 220 q-8 -8 0 -16"/><path d="M140 216 q-8 -8 0 -16"/>
  </g>
  <g id="drips" fill="#2f7ff0">
-  <ellipse cx="66" cy="242" rx="3" ry="4"/><ellipse cx="100" cy="246" rx="3" ry="4"/><ellipse cx="134" cy="242" rx="3" ry="4"/>
+  <ellipse cx="60" cy="252" rx="3" ry="4"/><ellipse cx="100" cy="254" rx="3" ry="4"/><ellipse cx="140" cy="252" rx="3" ry="4"/>
  </g>
- <path id="bolt" d="M118 120 l-12 20 h8 l-6 16 l16 -22 h-9 Z" fill="#22c55e"/>
+ <path id="bolt" d="M118 128 l-12 20 h8 l-6 16 l16 -22 h-9 Z" fill="#22c55e"/>
 </svg>`;
 
 const STATUS_WORDS = {
@@ -502,8 +517,8 @@ ${this._popup ? `<dialog class="pop" id="pop">
     const wl = this._num("sensor", "water_level");
     const wtr = this.$("water");
     if (wtr && wl != null) {
-      const h = Math.max(0, Math.min(70, (wl / 100) * 70));
-      wtr.setAttribute("y", (104 + (70 - h)).toFixed(1));
+      const h = Math.max(0, Math.min(44, (wl / 100) * 44));
+      wtr.setAttribute("y", (162 + (44 - h)).toFixed(1));
       wtr.setAttribute("height", h.toFixed(1));
     }
 
