@@ -1786,6 +1786,7 @@ const DE = { "rd-motion-card": {
   expand: "Ein-/Ausklappen",
   power: "Bewegungssteuerung ein/aus",
   close: "Schließen",
+  agg_title: "Gesamt-Bewegung",
   e_title: "Titel",
   e_mode: "Anzeige",
   e_language: "Sprache",
@@ -1813,6 +1814,7 @@ const EN = { "rd-motion-card": {
   expand: "Expand / collapse",
   power: "Motion control on/off",
   close: "Close",
+  agg_title: "Aggregate motion",
   e_title: "Title",
   e_mode: "Display",
   e_language: "Language",
@@ -1843,6 +1845,9 @@ ha-card{padding:12px 14px}
 .pwr{border:none;border-radius:12px;background:var(--divider-color);color:var(--primary-text-color);width:38px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .pwr ha-icon{--mdc-icon-size:19px}
 .pwr.on{background:var(--armed);color:#fff}
+.agg{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:var(--divider-color);color:var(--secondary-text-color);cursor:pointer}
+.agg ha-icon{--mdc-icon-size:17px}
+.agg.live{background:color-mix(in srgb,var(--live) 22%,transparent);color:var(--live)}
 .toggle-btn{border:none;background:none;color:var(--secondary-text-color);cursor:pointer;padding:2px;flex:0 0 auto;display:inline-flex}
 .toggle-btn ha-icon{--mdc-icon-size:20px;transition:transform .25s}
 .toggle-btn.open ha-icon{transform:rotate(180deg)}
@@ -1973,7 +1978,8 @@ class RdMotionCard extends HTMLElement {
  <div class="hd" id="hd">
   <ha-icon icon="mdi:motion-sensor"></ha-icon>
   <span class="ttl" id="ttl">${ttl}</span>
-  ${this._inline ? "" : `<button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
+  ${this._inline ? "" : `<span class="agg" id="aggFlag" title="${this._t("agg_title")}"><ha-icon icon="mdi:motion-sensor"></ha-icon></span>
+  <button class="toggle-btn" id="toggleBtn" title="${popup ? this._t("settings") : this._t("expand")}"><ha-icon icon="${popup ? "mdi:tune-variant" : "mdi:chevron-down"}"></ha-icon></button>`}
   <button class="pwr" id="pwr" data-act="pwr" title="${this._t("power")}"><ha-icon icon="mdi:power"></ha-icon></button>
  </div>
  ${popup ? "" : `<div class="drop" id="body"${this._inline ? "" : " hidden"}>${this._rows()}</div>`}
@@ -1993,10 +1999,14 @@ ${popup ? `<dialog class="pop" id="pop">
     this.$("pwr").addEventListener("click", (ev) => this._tap(ev), false);
     if (!this._inline) {
       // Open/close from the whole header — leading icon, title and the tune/chevron
-      // icon; the power button keeps its own handler.
+      // icon; the power button and the aggregate flag keep their own handlers.
       this.$("hd").addEventListener("click", (e) => {
-        if (e.target.closest("#pwr")) return;
+        if (e.target.closest("#pwr") || e.target.closest("#aggFlag")) return;
         this._toggle();
+      }, false);
+      this.$("aggFlag").addEventListener("click", (e) => {
+        e.stopPropagation();
+        this._mi(this._cfg.aggregate);
       }, false);
     }
     if (popup) {
@@ -2037,6 +2047,7 @@ ${popup ? `<dialog class="pop" id="pop">
     const live = this._on(c.aggregate);
     this.$("hd").className = "hd" + (live ? " active" : "");
     if (this.$("popHd")) this.$("popHd").className = "pop-hd" + (live ? " active" : "");
+    if (this.$("aggFlag")) this.$("aggFlag").className = "agg" + (live ? " live" : "");
     this.$("status").className = "status" + (live ? " live" : "");
     this.$("stIco").setAttribute("icon", live ? "mdi:motion-sensor" : "mdi:sleep");
     this.$("stTxt").textContent = live ? this._t("detected") : this._t("calm");

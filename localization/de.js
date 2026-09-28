@@ -312,6 +312,7 @@ export default {
     expand: "Ein-/Ausklappen",
     power: "Bewegungssteuerung ein/aus",
     close: "Schließen",
+    agg_title: "Gesamt-Bewegung",
     e_title: "Titel",
     e_mode: "Anzeige",
     e_language: "Sprache",

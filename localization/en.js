@@ -312,6 +312,7 @@ export default {
     expand: "Expand / collapse",
     power: "Motion control on/off",
     close: "Close",
+    agg_title: "Aggregate motion",
     e_title: "Title",
     e_mode: "Display",
     e_language: "Language",
