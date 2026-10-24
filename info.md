@@ -1,6 +1,6 @@
 # HA Lovelace Cards (Ring)
 
-Ten vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
+Eleven vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
 
 - **`custom:star-projector-card`** – smart star projector; controls as a modal popup
   or an inline dropdown (`mode`), every entity a selectable editor field.
@@ -19,7 +19,10 @@ Ten vanilla‑JS custom Lovelace cards (no framework, each with a visual editor)
 - **`custom:select-button-card`** – tile‑style push button that activates one fixed option of
   a `select` entity; the icon lights up while that option is active.
 
-Every card takes `language` (`auto` / `de` / `en`); all but `select-button-card` also take
+- **`custom:bring-shopping-card`** – a `todo` list as a Bring!-style shopping list: big tiles with
+  automatically matched icons, category groups, recently used. No default list.
+
+Every card takes `language` (`auto` / `de` / `en`); all but `select-button-card` and `bring-shopping-card` also take
 `mode` (`popup` / `dropdown` / `inline`). UI text is bilingual German/English; `auto` follows
 the HA UI language.
 
