@@ -22,6 +22,7 @@ Every card exposes its entities as config options for exactly that reason.
 | `custom:dreame-h14-card` | Dreame H14 Pro | Hand‑pushed wet/dry vacuum — tank/consumable alerts, the two dock actions, suction/water/brush levels, wear counters. Popup, dropdown, or inline. |
 | `custom:shutter-automation-card` | Rolladen‑Automatik | Sun/azimuth/temperature/brightness shading automation — status, editable close/open thresholds, manual close/open scripts, optional horizon‑card info block. Popup, dropdown, or inline. |
 | `custom:select-button-card` | Select Button | Tile‑style **push button**: tapping the whole card selects one fixed `option` of a `select` entity (`select.select_option`); the round icon badge lights up in the active colour while that option is the one currently selected. Hold = more‑info. No popup/dropdown — it *is* a button. |
+| `custom:bring-shopping-card` | Einkaufsliste (Bring‑Stil) | A `todo` entity shown like the Bring! app: big phone‑friendly tiles with an automatically matched icon per item (keyword/fuzzy matching, no AI), grouped by shop category, plus a "recently used" section. Tap = tick off / put back, long‑press = delete, typing offers suggestions. **No default list** — pick it in the editor. No popup/dropdown. |
 
 Code comments are English. User‑facing text is bilingual: every card takes a
 `language` option (`auto` / `de` / `en`) — `auto` follows the Home Assistant UI
@@ -342,6 +343,35 @@ language: auto                        # auto | de | en (editor labels + "not fou
 **Tap** anywhere on the card → `select.select_option`. **Hold** → the entity's more‑info
 dialog. The icon badge is grey while the current state is anything else and switches to
 `color` the moment the entity's state equals `option`. No `mode` option (see above).
+
+### `custom:bring-shopping-card`
+
+```yaml
+type: custom:bring-shopping-card
+entity: todo.my_shopping_list   # required — no default, pick it in the editor
+title: Einkaufsliste            # optional
+columns: 3                      # optional — 2 (largest text) | 3 | 4
+group_by_category: true         # optional
+show_recent: true               # optional — "Zuletzt verwendet" section
+recent_limit: 24                # optional
+color: "#ee5a45"                # optional header colour (theme colour name or CSS colour)
+language: auto                  # auto | de | en
+```
+
+| Interaction | Effect |
+|---|---|
+| Tap an open tile | Ticks the item off (`todo.update_item` → `completed`); it moves to "Zuletzt verwendet". |
+| Tap a recent tile | Puts it back on the list (`needs_action`). |
+| Long‑press a tile | Deletes the item for good (`todo.remove_item`, asks first). |
+| Type in the field + Enter / **+** | Adds the item. Already open → just highlighted; in the history → re‑activated instead of duplicated. Suggestions come from the list history and a built‑in product catalogue. |
+
+Icons are picked per item name by plain string scoring against a keyword catalogue
+(`P` in `src/bring-shopping-card.js`): case/umlaut folding, German compound words matched by
+their head word (*Apfelsaft* → juice), plural endings and one/two‑letter typos
+(*Zweibeln* → onion). Unknown names get a basket icon under "Sonstiges". To teach it a word,
+add it to the keyword string of the matching catalogue row. The card talks to the list
+only through the standard `todo` services, so any sync you have on the entity (e.g. to Alexa)
+keeps working untouched. No `mode` option — the list is the card (like `select-button-card`).
 
 ---
 
