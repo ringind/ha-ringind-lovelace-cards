@@ -15,6 +15,7 @@ Every card exposes its entities as config options for exactly that reason.
 | `custom:star-projector-card` | Sternenprojektor | Smart star projector — power + nebula/stars brightness, rotation speed, sleep timer. `mode` (editor-choosable) shows the controls in a **modal popup** (scaled like HA's more-info dialog; transparent overlay so the dashboard stays 100 % visible), an inline expand/collapse **dropdown**, or permanently **inline**. Power button is available in the popup header too. Every entity is an individually selectable field in the editor (no prefix). |
 | `custom:wz-tv-card` | Wohnzimmer TV | Compact TV hub — power, 1–4 remote‑subview shortcuts, 1–4 HDMI‑input chips, Hue Play Sync Box (with a labelled **Sync** button), 1–4 Sonos sound toggles (night‑sound / speech‑enhancement / …), TV‑light scene. Popup, dropdown, or inline. |
 | `custom:tv-remote-card` | Fernbedienung | Config‑only fork of `wz-tv-card` — no pre‑filled entities/labels/icons anywhere, plus a built‑in on‑screen replica of the physical waipu.tv Android TV remote (D‑pad, numeric keypad, volume, playback, …) targeting one `remote.*` entity. Popup, dropdown, or inline. |
+| `custom:projector-remote-card` | Beamer-Fernbedienung | On‑screen remote for an Android projector/TV controlled over ADB (HA "Android Debug Bridge" integration) — power, D‑pad + OK, back/home/menu/settings, volume, media keys and 0–6 app shortcuts. No default entities. Popup, dropdown, or inline. |
 | `custom:rd-motion-card` | Bewegungssensoren | Motion/presence panel — master arm toggle, aggregate "any motion" banner, and an add/remove list (up to 20, no default entities) of per‑sensor live‑detection dot + enable toggle (target may be a `switch` or an `automation`). Popup, dropdown, or inline. |
 | `custom:aeg-waschtrockner-card` | AEG Waschtrockner | AEG 9000‑series washer‑dryer (`electrolux_status`) — animated illustration, cycle status/ETA, program & option chips, context‑aware start/pause/stop. Popup, dropdown, or inline. |
 | `custom:bosch-dishwasher-card` | Bosch Spülmaschine | "Non‑smart" dishwasher driven by a single `input_boolean` — elapsed time, estimated remaining, done state. Popup, dropdown, or inline. |
@@ -195,6 +196,30 @@ Plus the [common options](#common-options-all-cards). Two remote buttons have no
 1:1 Android TV Remote equivalent and are a documented best effort: "Letzter Sender" sends
 the raw Android keycode 229 (`KEYCODE_LAST_CHANNEL`), and "Von Beginn starten" sends
 `MEDIA_PREVIOUS`, the closest standard media semantic.
+
+### `custom:projector-remote-card`
+
+On-screen remote for an Android projector/TV that Home Assistant controls over ADB
+(integration *Android Debug Bridge*, `androidtv`). Like `tv-remote-card` it ships with no
+pre-filled entities, labels, icons or package names — everything is set in the visual editor.
+
+```yaml
+type: custom:projector-remote-card
+title: Beamer
+mode: popup                       # popup | dropdown | inline
+language: auto                    # auto | de | en
+media_player: media_player.xxx    # power button, on/off state, app launch
+remote: remote.xxx                # key commands
+apps:                             # 0–6, add/remove in the visual editor
+  - { label: SmartTube, icon: "mdi:youtube", source: org.smarttube.stable }
+```
+
+Plus the [common options](#common-options-all-cards). Power runs through the `media_player`
+(`media_player.toggle`); the app shortcuts call `media_player.select_source` with the app's
+Android package name (the app in the foreground is highlighted). All other buttons send the
+ADB integration's key names (`UP`, `DOWN`, `LEFT`, `RIGHT`, `ENTER`, `BACK`, `HOME`, `MENU`,
+`SETTINGS`, `VOLUME_UP`, `VOLUME_DOWN`, `MUTE`, `PREVIOUS`, `PLAY_PAUSE`, `NEXT`) via
+`remote.send_command`. Buttons stay disabled until their entity is configured.
 
 ### `custom:rd-motion-card`
 

@@ -1,6 +1,6 @@
 # HA Lovelace Cards (Ring)
 
-Eleven vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
+Twelve vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
 
 - **`custom:star-projector-card`** – smart star projector; controls as a modal popup
   or an inline dropdown (`mode`), every entity a selectable editor field.
@@ -8,6 +8,8 @@ Eleven vanilla‑JS custom Lovelace cards (no framework, each with a visual edit
   with a labelled Sync button, 1–4 Sonos sound toggles).
 - **`custom:tv-remote-card`** – config-only fork of `wz-tv-card` with no pre-filled entities
   plus a built-in on-screen replica of the physical waipu.tv Android TV remote.
+- **`custom:projector-remote-card`** – on-screen remote for an Android projector/TV controlled over ADB
+  (D-pad, home/back/menu, volume, media keys, 0–6 app shortcuts); no default entities.
 - **`custom:rd-motion-card`** – motion/presence panel with an add/remove list (up to 20, no
   default entities) of per‑sensor live dot + enable toggle.
 - **`custom:aeg-waschtrockner-card`** – AEG 9000 washer‑dryer (`electrolux_status`).
