@@ -27,5 +27,5 @@ jobs:
         with:
           node-version: 20
       - run: node build.mjs
-      - name: Fail if ha-lovelace-cards.js is stale
-        run: git diff --exit-code -- ha-lovelace-cards.js
+      - name: Fail if ha-ringind-lovelace-cards.js is stale
+        run: git diff --exit-code -- ha-ringind-lovelace-cards.js

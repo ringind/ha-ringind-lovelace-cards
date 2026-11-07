@@ -17,7 +17,7 @@ jobs:
           node-version: 20
       - name: Build bundle
         run: node build.mjs
-      - name: Attach ha-lovelace-cards.js to the release
+      - name: Attach ha-ringind-lovelace-cards.js to the release
         uses: softprops/action-gh-release@v2
         with:
-          files: ha-lovelace-cards.js
+          files: ha-ringind-lovelace-cards.js

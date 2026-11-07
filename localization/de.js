@@ -1,4 +1,4 @@
-/* ha-lovelace-cards — German (de) user-facing strings, one entry per card type.
+/* ha-ringind-lovelace-cards — German (de) user-facing strings, one entry per card type.
  * Values are plain strings or (arg) => string builders. Edit here; `npm run build`
  * inlines the matching slice into each card (src/*.js keep an `import` of this file).
  */

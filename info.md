@@ -1,4 +1,4 @@
-# HA Lovelace Cards (Ring)
+# HA Ringind Lovelace Cards
 
 Twelve vanilla‑JS custom Lovelace cards (no framework, each with a visual editor):
 

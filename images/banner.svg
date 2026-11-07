@@ -16,7 +16,7 @@
   <circle cx="1080" cy="70" r="110" fill="#4fc3f7" opacity="0.08"/>
   <circle cx="120" cy="300" r="140" fill="#81c784" opacity="0.06"/>
 
-  <text x="60" y="90" class="title">HA Lovelace Cards</text>
+  <text x="60" y="90" class="title">HA Ringind Lovelace Cards</text>
   <text x="60" y="124" class="subtitle">9 vanilla-JS custom cards for Home Assistant · bilingual DE / EN · popup, dropdown &amp; inline modes</text>
 
   <g class="chip-text" text-anchor="middle">

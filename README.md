@@ -1,6 +1,6 @@
-# HA Lovelace Cards (Ring)
+# HA Ringind Lovelace Cards
 
-![HA Lovelace Cards banner](images/banner.svg)
+![HA Ringind Lovelace Cards banner](images/banner.svg)
 
 A small collection of **vanilla JavaScript** custom Lovelace cards for Home Assistant —
 no framework, no build tooling required to use them, each card self‑contained with its own
@@ -56,8 +56,8 @@ This repository is **not** in the default HACS store, so you add it as a custom 
 3. **Repository:** `https://github.com/ringind/ha-ringind-lovelace-cards`
    **Type / Category:** `Dashboard` (a.k.a. *Lovelace* / *plugin*).
    Click **Add**.
-4. Find **"HA Lovelace Cards (Ring)"** in the HACS list, open it, click **Download**, confirm.
-5. HACS copies the bundle to `config/www/community/ha-ringind-lovelace-cards/ha-lovelace-cards.js`
+4. Find **"HA Ringind Lovelace Cards"** in the HACS list, open it, click **Download**, confirm.
+5. HACS copies the bundle to `config/www/community/ha-ringind-lovelace-cards/ha-ringind-lovelace-cards.js`
    and, on a default (Storage/UI‑managed) dashboard setup, **registers the Lovelace resource
    for you**. If it does not (YAML‑mode dashboards), add it manually — see
    [*Register the resource*](#register-the-resource) below.
@@ -69,13 +69,13 @@ Updating later: HACS shows an update on the repo; click **Update** and hard‑re
 ### Option B — Manual (community-card folder)
 
 1. Create `config/www/community/ringind-ha-cards/` on your Home Assistant host.
-2. Copy `ha-lovelace-cards.js` (the built bundle at the repo root — every `src/*.js` with
+2. Copy `ha-ringind-lovelace-cards.js` (the built bundle at the repo root — every `src/*.js` with
    its `localization/` slice inlined) into it:
-   `config/www/community/ringind-ha-cards/ha-lovelace-cards.js`.
+   `config/www/community/ringind-ha-cards/ha-ringind-lovelace-cards.js`.
    The repo's `deploy/ringind-ha-cards/` folder already contains exactly this (plus the
    per-card `dist/*.js` builds, if you'd rather register a single card).
 3. Register the resource (below), pointing at
-   `/local/community/ringind-ha-cards/ha-lovelace-cards.js`.
+   `/local/community/ringind-ha-cards/ha-ringind-lovelace-cards.js`.
 4. Hard‑refresh the browser.
 
 ### Register the resource
@@ -83,8 +83,8 @@ Updating later: HACS shows an update on the repo; click **Update** and hard‑re
 Only needed if HACS did not do it automatically, or for a manual install.
 
 **UI (Storage mode):** *Settings → Dashboards → ⋮ → Resources → + Add resource*
-- **URL:** `/hacsfiles/ringind-ha-cards/ha-lovelace-cards.js` (HACS)
-  or `/local/community/ringind-ha-cards/ha-lovelace-cards.js` (manual)
+- **URL:** `/hacsfiles/ringind-ha-cards/ha-ringind-lovelace-cards.js` (HACS)
+  or `/local/community/ringind-ha-cards/ha-ringind-lovelace-cards.js` (manual)
 - **Resource type:** `JavaScript Module`
 
 **YAML mode** (`configuration.yaml` / `ui-lovelace.yaml`):
@@ -93,7 +93,7 @@ Only needed if HACS did not do it automatically, or for a manual install.
 lovelace:
   mode: yaml            # or storage
   resources:
-    - url: /local/community/ringind-ha-cards/ha-lovelace-cards.js
+    - url: /local/community/ringind-ha-cards/ha-ringind-lovelace-cards.js
       type: module
 ```
 
@@ -412,7 +412,7 @@ keeps working untouched. No `mode` option — the list is the card (like `select
 - **`npm run build`** (`build.mjs`, Node, no deps) — a `data:` URI module can't resolve the
   relative `import`, so the build inlines the matching localization slice and emits:
   - `dist/<card>.js` — self‑contained per‑card build (register one card on its own)
-  - `ha-lovelace-cards.js` (repo root) — the bundle, each card in its own IIFE
+  - `ha-ringind-lovelace-cards.js` (repo root) — the bundle, each card in its own IIFE
   - `deploy/ringind-ha-cards/` — a copy of the bundle + `dist/*.js`, i.e. exactly what goes
     into `config/www/community/ringind-ha-cards/` on the HA host.
 
@@ -422,7 +422,7 @@ npm run build
 ```
 
 CI (`.github/workflows/validate.yml`) runs the HACS action and fails the build if
-`ha-lovelace-cards.js` is out of date. `release.yml` rebuilds and attaches the bundle to
+`ha-ringind-lovelace-cards.js` is out of date. `release.yml` rebuilds and attaches the bundle to
 every published GitHub Release.
 
 ---
