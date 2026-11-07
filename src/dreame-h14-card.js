@@ -206,10 +206,24 @@ function battIcon(pct, charging) {
   return "mdi:battery-" + Math.round(pct / 10) * 10;
 }
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class DreameH14Card extends HTMLElement {
   static getStubConfig() { return { prefix: "h14_pro" }; }
   static getConfigElement() { return document.createElement("dreame-h14-card-editor"); }
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._psig;
     this._cfg = Object.assign({ prefix: "h14_pro", mode: "popup", language: "auto" }, c || {});
     this._p = this._cfg.prefix;
@@ -223,6 +237,7 @@ class DreameH14Card extends HTMLElement {
     }
   }
   getCardSize() { return 15; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
 
   _lang() {
     const c = this._cfg.language || "auto";
@@ -323,7 +338,7 @@ ${this._popup ? `<dialog class="pop" id="pop">
   _render() {
     if (!this.shadowRoot) return;
     if (!this._e("sensor", "status") && !this._e("sensor", "battery")) {
-      this.$("body").innerHTML = `<div class="warn">${this._L().not_found("<b>" + this._p + "</b>")}</div>`;
+      this.$("body").innerHTML = `<div class="warn">${this._L().not_found("<b>" + esc(this._p) + "</b>")}</div>`;
       if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
@@ -514,7 +529,8 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "dreame-h14-card",
   name: "Dreame H14 Pro",
-  description: "Dreame H14 Pro Wischsauger – Status, Tanks/Wartung, Dock-Aktionen, Einstellungen",
+  description: "Dreame H14 Pro wet/dry vacuum — status, tanks/maintenance, dock actions, settings. Popup/dropdown/inline, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });
 

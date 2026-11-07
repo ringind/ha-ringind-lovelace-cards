@@ -5,6 +5,17 @@
 
 export default {
   "aeg-waschtrockner-card": {
+    programs: {
+          "Eco 40-60": "Eco 40–60", "Cottons": "Baumwolle", "Towels": "Handtücher",
+          "Delicates": "Feinwäsche", "Baby": "Baby", "Denim": "Jeans", "Darkclothes": "Dunkles",
+          "Wool Handwash": "Wolle/Handwäsche", "Silk": "Seide", "Synthetics": "Pflegeleicht",
+          "Sportwear": "Sport", "Microfibre": "Mikrofaser", "Bedlinen": "Bettwäsche",
+          "Antiallergy": "Anti-Allergie", "Machineclean": "Trommel reinigen", "Workingclothes": "Arbeitskleidung",
+          "20 Min 3Kg": "Quick 20′", "Nonstop 3H 3Kg": "Non-Stop 3 kg", "Steam": "Dampf auffrischen",
+          "Steamcashmere": "Dampf Kaschmir", "Rinse": "Spülen", "Drain Spin": "Abpumpen/Schleudern",
+          "Duvet": "Bettdecke", "Outdoor": "Outdoor", "Down Jacket": "Daunenjacke", "Wool": "Wolle",
+      },
+    dryness: { "Cupboard": "Schranktrocken", "Cupboard Plus": "Schrank+", "Iron": "Bügeltrocken", "Iron Dry": "Bügeltrocken", "Extra Dry": "Extratrocken", "Damp": "Nutzfeucht", "Hang Dry": "Leinentrocken" },
     model: "9000 · Waschtrockner",
     disc: "Programm & Optionen",
     less: "Weniger",
@@ -465,6 +476,7 @@ export default {
     e_timer: "Sleep-Timer",
   },
   "rd-motion-card": {
+    entity_missing: (e) => "Entität " + e + " nicht gefunden.",
     title: "Bewegungssensoren",
     active: "Aktiv",
     off: "Aus",
@@ -493,6 +505,7 @@ export default {
     e_add: "Sensor hinzufügen",
   },
   "wz-tv-card": {
+    entity_missing: (e) => "Entität " + e + " nicht gefunden.",
     title: "Fernseher",
     remote: "Fernbedienung",
     hdmi: "HDMI-Quelle",
@@ -532,6 +545,7 @@ export default {
     e_add: "Hinzufügen",
   },
   "tv-remote-card": {
+    entity_missing: (e) => "Entität " + e + " nicht gefunden.",
     title: "Fernseher",
     remote: "Fernbedienung",
     hdmi: "HDMI-Quelle",

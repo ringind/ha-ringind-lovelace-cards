@@ -121,11 +121,25 @@ const BASE = { mode: "popup", language: "auto", remotes: [], hdmi: [], ton: [] }
 
 const clampList = (v) => (Array.isArray(v) ? v.slice(0, 4) : []);
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class TvRemoteCard extends HTMLElement {
   static getStubConfig() { return {}; }
   static getConfigElement() { return document.createElement("tv-remote-card-editor"); }
 
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._sig;
     this._cfg = Object.assign({}, BASE, c || {});
     this._cfg.remotes = clampList(c && c.remotes);
@@ -143,6 +157,7 @@ class TvRemoteCard extends HTMLElement {
     }
   }
   getCardSize() { return 8; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   disconnectedCallback() {
@@ -367,7 +382,7 @@ ${popup ? `<dialog class="pop" id="pop">
       return;
     }
     if (!this._hass.states[c.media_player]) {
-      this.$("body").innerHTML = `<div class="warn"><b>${c.media_player}</b> — ?</div>`;
+      this.$("body").innerHTML = `<div class="warn">${this._t("entity_missing")(esc(c.media_player))}</div>`;
       if (!this._popup) this.$("body").hidden = false;
       this._renderWaipu();
       return;
@@ -539,4 +554,5 @@ window.customCards.push({
   name: "TV Remote",
   description: "Fully configurable TV control card with a built-in waipu.tv Box remote (Android TV Remote integration). No pre-filled entities — everything set via the editor. Popup/dropdown/inline, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

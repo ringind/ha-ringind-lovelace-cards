@@ -175,6 +175,14 @@ const DEFAULTS = {
   timer: "time.smart_star_projector_timer",
 };
 
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class StarProjectorCard extends HTMLElement {
   static getStubConfig() {
     return {
@@ -184,6 +192,7 @@ class StarProjectorCard extends HTMLElement {
   }
   static getConfigElement() { return document.createElement("star-projector-card-editor"); }
   setConfig(c) {
+    assertCfg(c);
     const prev = this._cfg && this._cfg.mode + "|" + this._cfg.language;
     this._cfg = Object.assign({}, DEFAULTS, c || {});
     this._popup = this._cfg.mode === "popup";
@@ -197,6 +206,7 @@ class StarProjectorCard extends HTMLElement {
     }
   }
   getCardSize() { return 1; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   disconnectedCallback() {
@@ -283,7 +293,7 @@ class StarProjectorCard extends HTMLElement {
     const r = this.shadowRoot || this.attachShadow({ mode: "open" });
     const popup = this._popup;
     const ttl = this._cfg.title || this._t("title");
-    r.innerHTML = `<style>${STYLE}</style>
+    r.innerHTML = `<style>${STYLE}:host(.unavail) ha-card{opacity:.55}</style>
 <ha-card>
  <div class="hd" id="hd">
   <ha-icon icon="mdi:creation"></ha-icon>
@@ -338,7 +348,12 @@ ${popup ? `<dialog class="pop" id="pop">
     el.addEventListener("change", () => { this._drag.delete(id); onChange(Number(el.value)); });
   }
 
+  _markUnavail() {
+    const e = this._hass && this._cfg.power && this._hass.states[this._cfg.power];
+    this.classList.toggle("unavail", !!e && e.state === "unavailable");
+  }
   _render() {
+    this._markUnavail();
     if (!this.shadowRoot) return;
     const c = this._cfg;
     if (!this._e(c.power) && !this._e(c.nebula)) {
@@ -430,4 +445,5 @@ window.customCards.push({
   name: "Star Projector",
   description: "Smart star projector — popup, dropdown or inline; every entity selectable; DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

@@ -86,6 +86,13 @@ ha-card:active{transform:scale(.98)}
 .name.warn{color:var(--warning-color, #ff9800);font-weight:400;font-size:.9rem;white-space:normal}
 `;
 
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class SelectButtonCard extends HTMLElement {
   static getStubConfig(hass) {
     const sel = hass && Object.keys(hass.states).find((e) => e.startsWith("select."));
@@ -95,9 +102,11 @@ class SelectButtonCard extends HTMLElement {
   static getConfigElement() { return document.createElement("select-button-card-editor"); }
 
   setConfig(c) {
+    assertCfg(c);
     this._cfg = Object.assign({ language: "auto" }, c || {});
   }
   getCardSize() { return 1; }
+  getGridOptions() { return { columns: 6, min_columns: 3, rows: 1, min_rows: 1 }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   _lang() {
@@ -132,7 +141,7 @@ class SelectButtonCard extends HTMLElement {
 
   _build() {
     const r = this.attachShadow({ mode: "open" });
-    r.innerHTML = `<style>${STYLE}</style>
+    r.innerHTML = `<style>${STYLE}:host(.unavail) ha-card{opacity:.55}</style>
 <ha-card id="card" role="button" tabindex="0">
  <div class="icon" id="icon"><ha-icon id="ic" icon="mdi:gesture-tap-button"></ha-icon></div>
  <div class="txt"><span class="name" id="name"></span></div>
@@ -156,7 +165,12 @@ class SelectButtonCard extends HTMLElement {
     });
   }
 
+  _markUnavail() {
+    const e = this._hass && this._cfg.entity && this._hass.states[this._cfg.entity];
+    this.classList.toggle("unavail", !!e && e.state === "unavailable");
+  }
   _render() {
+    this._markUnavail();
     if (!this.shadowRoot || !this._hass) return;
     const c = this._cfg;
     const L = this._L();
@@ -251,4 +265,5 @@ window.customCards.push({
   name: "Select Button",
   description: "Push-button tile that activates one fixed option of a select entity; icon lights up while that option is active. DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

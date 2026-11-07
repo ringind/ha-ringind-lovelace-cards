@@ -5,6 +5,8 @@
 
 export default {
   "aeg-waschtrockner-card": {
+    programs: {},
+    dryness: {},
     model: "9000 · Washer-dryer",
     disc: "Programme & options",
     less: "Less",
@@ -465,6 +467,7 @@ export default {
     e_timer: "Sleep timer",
   },
   "rd-motion-card": {
+    entity_missing: (e) => "Entity " + e + " not found.",
     title: "Motion sensors",
     active: "Active",
     off: "Off",
@@ -493,6 +496,7 @@ export default {
     e_add: "Add sensor",
   },
   "wz-tv-card": {
+    entity_missing: (e) => "Entity " + e + " not found.",
     title: "TV",
     remote: "Remotes",
     hdmi: "HDMI source",
@@ -532,6 +536,7 @@ export default {
     e_add: "Add",
   },
   "tv-remote-card": {
+    entity_missing: (e) => "Entity " + e + " not found.",
     title: "TV",
     remote: "Remotes",
     hdmi: "HDMI source",

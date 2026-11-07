@@ -161,10 +161,24 @@ function tstamp(iso) {
   return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) + " " + t;
 }
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class RoborockS7Card extends HTMLElement {
   static getStubConfig() { return { vacuum: "vacuum.roborock_s7_maxv" }; }
   static getConfigElement() { return document.createElement("roborock-s7-card-editor"); }
   setConfig(c) {
+    assertCfg(c);
     const d = {
       vacuum: "vacuum.roborock_s7_maxv",
       map_entity: "image.roborock_s7_maxv_map_0_custom",
@@ -209,6 +223,7 @@ class RoborockS7Card extends HTMLElement {
     }
   }
   getCardSize() { return 16; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
 
   _lang() {
     const c = this._cfg.language || "auto";
@@ -351,7 +366,7 @@ ${this._popup ? `<dialog class="pop" id="pop">
   _render() {
     if (!this.shadowRoot) return;
     if (!this._e(this._cfg.vacuum)) {
-      this.$("body").innerHTML = `<div class="warn">${this._L().not_found("<b>" + this._cfg.vacuum + "</b>")}</div>`;
+      this.$("body").innerHTML = `<div class="warn">${this._L().not_found("<b>" + esc(this._cfg.vacuum) + "</b>")}</div>`;
       if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
@@ -535,7 +550,8 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "roborock-s7-card",
   name: "Roborock S7 MaxV",
-  description: "Roborock S7 MaxV – Karte, Steuerung, Reinigung nach Bereich, Wisch- & Statuswerte",
+  description: "Roborock S7 MaxV — map, controls, room cleaning, mop and status values. Popup/dropdown/inline, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });
 

@@ -111,11 +111,25 @@ const clampList = (v, def) => {
   return a.length ? a : def.slice();
 };
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class WzTvCard extends HTMLElement {
   static getStubConfig() { return { media_player: "media_player.samsungtv" }; }
   static getConfigElement() { return document.createElement("wz-tv-card-editor"); }
 
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._sig;
     this._cfg = Object.assign({}, DEFAULTS, c || {});
     this._cfg.remotes = clampList(c && c.remotes, DEFAULTS.remotes);
@@ -133,6 +147,7 @@ class WzTvCard extends HTMLElement {
     }
   }
   getCardSize() { return 4; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   disconnectedCallback() {
@@ -266,7 +281,7 @@ ${popup ? `<dialog class="pop" id="pop">
     if (!this.shadowRoot) return;
     const c = this._cfg;
     if (!this._hass || !this._hass.states[c.media_player]) {
-      this.$("body").innerHTML = `<div class="warn"><b>${c.media_player}</b> — ?</div>`;
+      this.$("body").innerHTML = `<div class="warn">${this._t("entity_missing")(esc(c.media_player))}</div>`;
       if (!this._popup) this.$("body").hidden = false;
       return;
     }
@@ -423,4 +438,5 @@ window.customCards.push({
   name: "Living-room TV",
   description: "Compact TV control — power, remotes, HDMI source, Sync Box, sound. Popup/dropdown/inline, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

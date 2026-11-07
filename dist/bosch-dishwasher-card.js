@@ -184,10 +184,24 @@ const MACHINE_SVG = `
  <g id="redlight"><ellipse cx="100" cy="246" rx="34" ry="7" fill="url(#bdglow)"/><ellipse cx="100" cy="246" rx="4" ry="2" fill="#ff4d4d"/></g>
 </svg>`;
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class BoschDishwasherCard extends HTMLElement {
   static getStubConfig() { return { entity: "input_boolean.livingdining_dishwasher" }; }
   static getConfigElement() { return document.createElement("bosch-dishwasher-card-editor"); }
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._sig;
     this._cfg = Object.assign(
       { entity: "input_boolean.livingdining_dishwasher", cycle_minutes: 195, mode: "popup", language: "auto" },
@@ -204,6 +218,7 @@ class BoschDishwasherCard extends HTMLElement {
     }
   }
   getCardSize() { return 7; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) {
     this._hass = h;
     if (!this.shadowRoot) this._build();
@@ -255,7 +270,7 @@ class BoschDishwasherCard extends HTMLElement {
     const L = this._L();
     const ttl = this._cfg.title || L.model;
     const inner = `<div class="foot" id="foot"></div>`;
-    r.innerHTML = `<style>${STYLE}</style>
+    r.innerHTML = `<style>${STYLE}:host(.unavail) ha-card{opacity:.55}</style>
 <ha-card>
  <div class="hdr">
   <div class="ttl"><span class="brand">BOSCH</span><span class="model" id="model">${ttl}</span></div>
@@ -293,12 +308,17 @@ ${this._popup ? `<dialog class="pop" id="pop">
     });
   }
 
+  _markUnavail() {
+    const e = this._hass && this._cfg.entity && this._hass.states[this._cfg.entity];
+    this.classList.toggle("unavail", !!e && e.state === "unavailable");
+  }
   _render() {
+    this._markUnavail();
     if (!this.shadowRoot) return;
     const L = this._L();
     const e = this._e();
     if (!e) {
-      this.$("more").innerHTML = `<div class="warn">${L.not_found("<b>" + this._cfg.entity + "</b>")}</div>`;
+      this.$("more").innerHTML = `<div class="warn">${L.not_found("<b>" + esc(this._cfg.entity) + "</b>")}</div>`;
       if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
@@ -403,4 +423,5 @@ window.customCards.push({
   name: "Bosch dishwasher",
   description: "Bosch Super Silence — status, runtime estimate, done indicator. Popup/dropdown/inline, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

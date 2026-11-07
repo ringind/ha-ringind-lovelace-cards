@@ -129,10 +129,19 @@ const STEP_OPEN = [
   ["open_brightness", "lbl_brightness_open", "mdi:brightness-6", "brightness_sensor"],
 ];
 
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class ShutterAutomationCard extends HTMLElement {
   static getStubConfig() { return { mode: "popup", language: "auto" }; }
   static getConfigElement() { return document.createElement("shutter-automation-card-editor"); }
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._psig;
     this._cfg = Object.assign({ mode: "popup", language: "auto" }, c || {});
     this._popup = this._cfg.mode === "popup";
@@ -145,6 +154,7 @@ class ShutterAutomationCard extends HTMLElement {
     }
   }
   getCardSize() { return 8; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   disconnectedCallback() {
@@ -488,6 +498,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "shutter-automation-card",
   name: "Rolladen-Automatik",
-  description: "Sonnenstands-gesteuerte Rolladen-Automatik (Ost/Süd/…) — Popup/Dropdown/Inline, jede Entität frei wählbar, DE/EN.",
+  description: "Sun-position-driven shutter automation (east/south/…) — popup/dropdown/inline, any entity selectable, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

@@ -98,6 +98,43 @@ dialog.pop::backdrop{background:transparent}
 // User-facing strings live in localization/{de,en}.js (one entry per card type).
 // `npm run build` inlines the slice for this card; the imports are the source of truth.
 const DE = { "aeg-waschtrockner-card": {
+  programs: {
+    "Eco 40-60": "Eco 40–60",
+    Cottons: "Baumwolle",
+    Towels: "Handtücher",
+    Delicates: "Feinwäsche",
+    Baby: "Baby",
+    Denim: "Jeans",
+    Darkclothes: "Dunkles",
+    "Wool Handwash": "Wolle/Handwäsche",
+    Silk: "Seide",
+    Synthetics: "Pflegeleicht",
+    Sportwear: "Sport",
+    Microfibre: "Mikrofaser",
+    Bedlinen: "Bettwäsche",
+    Antiallergy: "Anti-Allergie",
+    Machineclean: "Trommel reinigen",
+    Workingclothes: "Arbeitskleidung",
+    "20 Min 3Kg": "Quick 20′",
+    "Nonstop 3H 3Kg": "Non-Stop 3 kg",
+    Steam: "Dampf auffrischen",
+    Steamcashmere: "Dampf Kaschmir",
+    Rinse: "Spülen",
+    "Drain Spin": "Abpumpen/Schleudern",
+    Duvet: "Bettdecke",
+    Outdoor: "Outdoor",
+    "Down Jacket": "Daunenjacke",
+    Wool: "Wolle"
+  },
+  dryness: {
+    Cupboard: "Schranktrocken",
+    "Cupboard Plus": "Schrank+",
+    Iron: "Bügeltrocken",
+    "Iron Dry": "Bügeltrocken",
+    "Extra Dry": "Extratrocken",
+    Damp: "Nutzfeucht",
+    "Hang Dry": "Leinentrocken"
+  },
   model: "9000 · Waschtrockner",
   disc: "Programm & Optionen",
   less: "Weniger",
@@ -177,6 +214,8 @@ const DE = { "aeg-waschtrockner-card": {
   e_en: "Englisch"
 } };
 const EN = { "aeg-waschtrockner-card": {
+  programs: {},
+  dryness: {},
   model: "9000 · Washer-dryer",
   disc: "Programme & options",
   less: "Less",
@@ -299,38 +338,40 @@ const MACHINE_SVG = `
  <rect x="156" y="236" width="20" height="10" rx="3" fill="#9aa0a6"/>
 </svg>`;
 
-// program uid -> short German-ish label
-function prettyProgram(raw) {
+// program uid -> short label (translated via L.programs, vendor English otherwise)
+function prettyProgram(raw, map) {
   if (!raw) return "–";
   const parts = raw.split(/\s+Pr\s+/i);
   let s = (parts.length > 1 ? parts[1] : raw).trim();
   s = s.replace(/([A-Za-z])(\d)/g, "$1 $2").replace(/\s+/g, " ");
-  const map = {
-    "Eco 40-60": "Eco 40–60", "Cottons": "Baumwolle", "Towels": "Handtücher",
-    "Delicates": "Feinwäsche", "Baby": "Baby", "Denim": "Jeans", "Darkclothes": "Dunkles",
-    "Wool Handwash": "Wolle/Handwäsche", "Silk": "Seide", "Synthetics": "Pflegeleicht",
-    "Sportwear": "Sport", "Microfibre": "Mikrofaser", "Bedlinen": "Bettwäsche",
-    "Antiallergy": "Anti-Allergie", "Machineclean": "Trommel reinigen", "Workingclothes": "Arbeitskleidung",
-    "20 Min 3Kg": "Quick 20′", "Nonstop 3H 3Kg": "Non-Stop 3 kg", "Steam": "Dampf auffrischen",
-    "Steamcashmere": "Dampf Kaschmir", "Rinse": "Spülen", "Drain Spin": "Abpumpen/Schleudern",
-    "Duvet": "Bettdecke", "Outdoor": "Outdoor", "Down Jacket": "Daunenjacke", "Wool": "Wolle",
-  };
-  return map[s] || s;
+  return (map && map[s]) || s;
 }
-function humLabel(v) {
-  return ({ "Cupboard": "Schranktrocken", "Cupboard Plus": "Schrank+", "Iron": "Bügeltrocken",
-    "Iron Dry": "Bügeltrocken", "Extra Dry": "Extratrocken", "Damp": "Nutzfeucht",
-    "Hang Dry": "Leinentrocken" }[v]) || v;
+function humLabel(v, map) {
+  return (map && map[v]) || v;
 }
 function clockPlus(min) {
   const d = new Date(Date.now() + Math.round(min) * 60000);
   return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 }
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class AegWaschtrocknerCard extends HTMLElement {
   static getStubConfig() { return {}; }
   static getConfigElement() { return document.createElement("aeg-waschtrockner-card-editor"); }
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._psig;
     this._cfg = Object.assign({ prefix: "aeg_waschtrockner", mode: "popup", language: "auto" }, c || {});
     this._p = this._cfg.prefix;
@@ -369,6 +410,7 @@ class AegWaschtrocknerCard extends HTMLElement {
     this.$("discTxt").textContent = this._open ? this._L().less : this._L().disc;
   }
   getCardSize() { return 13; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   _id(suf) { const i = suf.indexOf("."); return suf.slice(0, i + 1) + this._p + "_" + suf.slice(i + 1); }
@@ -430,7 +472,7 @@ ${this._popup ? `<dialog class="pop" id="pop">
     const L = this._L();
     if (this.$("popT")) this.$("popT").textContent = this._cfg.title || ("AEG " + L.model);
     if (!this._e("sensor.appliancestate")) {
-      this.$("panel").innerHTML = `<div class="warn">${L.not_found("<b>" + this._p + "</b>")}</div>`;
+      this.$("panel").innerHTML = `<div class="warn">${L.not_found("<b>" + esc(this._p) + "</b>")}</div>`;
       if (!this._popup) { this.$("more").hidden = false; this.classList.remove("collapsed"); }
       return;
     }
@@ -546,7 +588,7 @@ ${this._popup ? `<dialog class="pop" id="pop">
 
     // program summary chips (tap = open more-info to change)
     const pc = [];
-    pc.push(chip(L.c_program, prettyProgram(this._st("select.userselections_programuid")),
+    pc.push(chip(L.c_program, prettyProgram(this._st("select.userselections_programuid"), L.programs),
       "more|select." + P_ + "_userselections_programuid", false, "mdi:tune-vertical"));
     const temp = (this._st("select.userselections_analogtemperature") || "").replace(" Celsius", "°").replace(/cold/i, this._lang() === "de" ? "Kalt" : "Cold");
     if (temp) pc.push(chip(L.c_temp, temp, "more|select." + P_ + "_userselections_analogtemperature", false, "mdi:thermometer"));
@@ -558,7 +600,7 @@ ${this._popup ? `<dialog class="pop" id="pop">
       "more|select." + P_ + "_userselections_steamvalue", true, "mdi:weather-fog"));
     const dryOn = this._st("switch.userselections_drymode") === "on";
     const hum = this._st("select.userselections_humiditytarget");
-    if (dryOn && hum) pc.push(chip(L.c_drytarget, humLabel(hum),
+    if (dryOn && hum) pc.push(chip(L.c_drytarget, humLabel(hum, L.dryness),
       "more|select." + P_ + "_userselections_humiditytarget", false, "mdi:tumble-dryer"));
     const tm = this._st("select.userselections_timemanagerlevel");
     if (tm && !/normal/i.test(tm)) pc.push(chip(L.c_time, tm,
@@ -667,6 +709,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: "aeg-waschtrockner-card",
   name: "AEG Waschtrockner",
-  description: "AEG 9000 Series Waschtrockner – Status, Programm, Steuerung",
+  description: "AEG 9000 Series washer-dryer — status, program, controls. Popup/dropdown/inline, DE/EN.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });

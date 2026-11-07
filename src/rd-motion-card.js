@@ -90,11 +90,25 @@ const DEFAULTS = {
   ],
 };
 
+// Escape config-derived values before they go into innerHTML.
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Reject clearly invalid options; unset options keep their defaults so existing dashboards keep working.
+function assertCfg(c) {
+  if (c == null) return;
+  if (typeof c !== "object" || Array.isArray(c)) throw new Error("Invalid card configuration");
+  if (c.mode !== undefined && !["popup", "dropdown", "inline"].includes(c.mode)) throw new Error('Invalid mode "' + c.mode + '" (use popup, dropdown or inline)');
+  if (c.language !== undefined && !["auto", "de", "en"].includes(c.language)) throw new Error('Invalid language "' + c.language + '" (use auto, de or en)');
+}
+
 class RdMotionCard extends HTMLElement {
   static getStubConfig() { return { sources: [{ name: "", motion: "", enable: "" }] }; }
   static getConfigElement() { return document.createElement("rd-motion-card-editor"); }
 
   setConfig(c) {
+    assertCfg(c);
     const prevSig = this._sig;
     this._cfg = Object.assign({}, DEFAULTS, c || {});
     this._src = Array.isArray(this._cfg.sources) && this._cfg.sources.length
@@ -110,6 +124,7 @@ class RdMotionCard extends HTMLElement {
     }
   }
   getCardSize() { return 4; }
+  getGridOptions() { return { columns: 12, min_columns: 6, rows: "auto" }; }
   set hass(h) { this._hass = h; if (!this.shadowRoot) this._build(); this._render(); }
 
   disconnectedCallback() {
@@ -167,7 +182,7 @@ class RdMotionCard extends HTMLElement {
     const r = this.shadowRoot || this.attachShadow({ mode: "open" });
     const popup = this._popup;
     const ttl = this._cfg.title || this._t("title");
-    r.innerHTML = `<style>${STYLE}</style>
+    r.innerHTML = `<style>${STYLE}:host(.unavail) ha-card{opacity:.55}</style>
 <ha-card>
  <div class="hd" id="hd">
   <ha-icon icon="mdi:motion-sensor"></ha-icon>
@@ -226,11 +241,16 @@ ${popup ? `<dialog class="pop" id="pop">
     if (act === "tg" && s.enable) return this._svc(s.enable.split(".")[0], "toggle", { entity_id: s.enable });
   }
 
+  _markUnavail() {
+    const e = this._hass && this._cfg.master && this._hass.states[this._cfg.master];
+    this.classList.toggle("unavail", !!e && e.state === "unavailable");
+  }
   _render() {
+    this._markUnavail();
     if (!this.shadowRoot) return;
     const c = this._cfg;
     if (!this._hass || !this._hass.states[c.master]) {
-      this.$("body").innerHTML = `<div class="warn"><b>${c.master}</b> — ?</div>`;
+      this.$("body").innerHTML = `<div class="warn">${this._t("entity_missing")(esc(c.master))}</div>`;
       if (!this._popup) this.$("body").hidden = false;
       return;
     }
@@ -372,4 +392,5 @@ window.customCards.push({
   name: "Motion sensors",
   description: "Compact motion/presence control — live dot + enable toggle per source. Popup/dropdown/inline, DE/EN, editable list, no default entities.",
   preview: false,
+  documentationURL: "https://github.com/ringind/ha-ringind-lovelace-cards",
 });
